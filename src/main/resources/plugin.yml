@@ -1,6 +1,16 @@
-name: cathub
+name: catplugin
 version: '1.0.0'
-main: cn.onea.cathub.Cathub
+main: cn.onea.catplugin.CatPlugin
 api-version: '1.21'
-authors: [ onea ]
-description: cathub
+authors: [onea]
+commands:
+  hub:
+    description: hub
+    usage: /<command> [on|off]
+  catkill:
+    description: catkill
+    usage: /<command> [on|off]
+permissions:
+  cat.admin:
+    description: 管理功能喵
+    default: op
