@@ -1,0 +1,6 @@
+name: cathub
+version: '1.0.0'
+main: cn.onea.cathub.Cathub
+api-version: '1.21'
+authors: [ onea ]
+description: cathub
