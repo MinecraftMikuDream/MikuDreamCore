@@ -6,10 +6,13 @@ authors: [onea]
 commands:
   hub:
     description: hub
-    usage: /<command> [on|off]
+    usage: /<command>
   catkill:
     description: catkill
-    usage: /<command> [on|off]
+    usage: /<command>
+  catconfig:
+    description: catkill
+    usage: /<command>
 permissions:
   cat.admin:
     description: 管理功能喵
