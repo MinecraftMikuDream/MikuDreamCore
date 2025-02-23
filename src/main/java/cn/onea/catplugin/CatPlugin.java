@@ -2,15 +2,20 @@ package cn.onea.catplugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.inventory.CraftingInventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.jetbrains.annotations.NotNull;
 
 public class CatPlugin extends JavaPlugin implements Listener {
     private boolean featureEnabled = true;
@@ -34,12 +39,9 @@ public class CatPlugin extends JavaPlugin implements Listener {
         } else {
             getLogger().info("home 配置项已存在，跳过创建");
         }
-        int homeX = getConfig().getInt("home.x");
-        int homeY = getConfig().getInt("home.y");
-        int homeZ = getConfig().getInt("home.z");
-        getLogger().info("主城 坐标为: " + homeX + ", " + homeY + ", " + homeZ);
 
         Bukkit.getPluginManager().registerEvents(this, this);
+
     }
 
     @Override
@@ -50,9 +52,9 @@ public class CatPlugin extends JavaPlugin implements Listener {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, Command cmd, @NotNull String label, String @NotNull [] args) {
         if (cmd.getName().equalsIgnoreCase("catkill")) {
-            handleCatkillCommand(sender, args);
+            handleCatkillCommand(sender);
             return true;
         }
         if (cmd.getName().equalsIgnoreCase("hub")) {
@@ -66,12 +68,11 @@ public class CatPlugin extends JavaPlugin implements Listener {
         return false;
     }
 
-    private void handleCatkillCommand(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player)) {
+    private void handleCatkillCommand(CommandSender sender) {
+        if (!(sender instanceof Player player)) {
             sender.sendMessage("只有玩家可以使用这个命令喵！");
             return;
         }
-        Player player = (Player) sender;
         if (!this.featureEnabled) {
             player.sendMessage("§c当前自杀功能已被管理员关闭喵！");
             return;
@@ -83,24 +84,19 @@ public class CatPlugin extends JavaPlugin implements Listener {
     }
 
     private void handleHubCommand(CommandSender sender) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             sender.sendMessage("只有玩家可以使用这个命令喵！");
             return;
         }
-        Player player = (Player) sender;
         // 使用配置中的 home 坐标
         int x = getConfig().getInt("home.x");
         int y = getConfig().getInt("home.y");
         int z = getConfig().getInt("home.z");
-//        Location target = new Location(voidWorld, x, y, z);
-//        player.teleport(target);
-//        player.setGameMode(GameMode.ADVENTURE);
-//        player.sendMessage("§6传送成功！你已进入主城，当前游戏模式为冒险。");
         String command = "execute in minecraft:the_void run minecraft:tp " + player.getName() + " " + x + " " + y + " " + z;
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
         // 设置玩家为冒险模式
         player.setGameMode(GameMode.ADVENTURE);
-        player.sendMessage("§6传送成功！你已进入 the_void 维度，当前游戏模式为冒险。");
+        player.sendMessage("§6传送成功！你已进入主城，当前游戏模式为冒险。");
     }
 
     /**
@@ -179,4 +175,6 @@ public class CatPlugin extends JavaPlugin implements Listener {
             }
         }
     }
+
+
 }

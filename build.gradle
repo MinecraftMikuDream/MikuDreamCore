@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'cn.onea'
-version = '1.0.3hotfix'
+version = '1.0.4hotfix'
 
 repositories {
     mavenCentral()
