@@ -61,3 +61,10 @@ jobs:
         with:
           name: standalone-binary
           path: SunkPlugin-*.jar
+
+      - name: Debug directory structure
+        run: |
+          echo "===== Bukkit 模块 JAR 文件 ====="
+          ls -R bukkit/loader/build/libs/
+          echo "===== Standalone 模块 JAR 文件 ====="
+          ls -R standalone/loader/build/libs/    
