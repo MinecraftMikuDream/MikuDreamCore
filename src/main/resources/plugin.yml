@@ -11,8 +11,12 @@ commands:
     description: catkill
     usage: /<command>
   catconfig:
+    description: catconfig
+    usage: /<command>
+  raffle:
     description: raffle
     usage: /<command>
+
 permissions:
   cat.admin:
     description: 管理功能喵
