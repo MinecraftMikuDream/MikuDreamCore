@@ -1,4 +1,4 @@
-name: Build Gradle and Publish Docker image
+name: Build Gradle
 
 on:
   push:
@@ -22,6 +22,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          
+      - name: Make gradlew executable
+        run: chmod +x gradlew
 
       - name: Validate gradle wrapper
         uses: gradle/actions/wrapper-validation@v3
