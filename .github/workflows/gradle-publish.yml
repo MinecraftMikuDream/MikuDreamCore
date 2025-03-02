@@ -54,10 +54,10 @@ jobs:
         with:
           name: jars
           path: |
-            bukkit/loader/build/libs/SunkPlugin-Bukkit-*.jar
+            SunkPlugin-*.jar
 
       - name: Upload standalone artifact
         uses: actions/upload-artifact@v4
         with:
           name: standalone-binary
-          path: standalone/loader/build/libs/SunkPlugin-Standalone-*.jar
+          path: SunkPlugin-*.jar
