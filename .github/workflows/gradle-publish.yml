@@ -54,17 +54,4 @@ jobs:
         with:
           name: jars
           path: |
-            SunkPlugin-*.jar
-
-      - name: Upload standalone artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: standalone-binary
-          path: SunkPlugin-*.jar
-
-      - name: Debug directory structure
-        run: |
-          echo "===== Bukkit 模块 JAR 文件 ====="
-          ls -R 
-          echo "===== Standalone 模块 JAR 文件 ====="
-          ls -R  
+            ./build/libs/sunkplugins-*.jar
