@@ -1,4 +1,4 @@
-package cn.onea.catplugin;
+package cn.onea.sunkplugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
-public class CatPlugin extends JavaPlugin implements Listener {
+public class SunkPlugins extends JavaPlugin implements Listener {
     private boolean featureEnabled = true;
     private static final String ADMIN_PERMISSION = "cat.admin";
     private static final String CONFIG_KEY = "kill_enabled";
@@ -22,7 +22,7 @@ public class CatPlugin extends JavaPlugin implements Listener {
     public void onEnable() {
         this.saveDefaultConfig();
         this.featureEnabled = this.getConfig().getBoolean(CONFIG_KEY, true);
-        this.getLogger().info("主人!喵喵牌插件已开启!");
+        this.getLogger().info("sunkplugins已开启!");
 
         // 检查是否存在 home 节点
         if (!getConfig().contains("home")) {
@@ -44,7 +44,7 @@ public class CatPlugin extends JavaPlugin implements Listener {
     public void onDisable() {
         this.getConfig().set(CONFIG_KEY, this.featureEnabled);
         this.saveConfig();
-        this.getLogger().info("主人!喵喵牌插件已卸载");
+        this.getLogger().info("sunkplugins已卸载");
     }
 
     @Override

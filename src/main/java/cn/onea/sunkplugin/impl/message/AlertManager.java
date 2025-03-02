@@ -1,6 +1,6 @@
-package cn.onea.catplugin.impl.message;
+package cn.onea.sunkplugin.impl.message;
 
-import cn.onea.catplugin.CatPlugin;
+import cn.onea.sunkplugin.SunkPlugins;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -10,10 +10,10 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AlertManager {
-    private final CatPlugin plugin;
+    private final SunkPlugins plugin;
     private final Map<UUID, Long> lastAlertTime = new ConcurrentHashMap<>();
 
-    public AlertManager(CatPlugin plugin) {
+    public AlertManager(SunkPlugins plugin) {
         this.plugin = plugin;
     }
 

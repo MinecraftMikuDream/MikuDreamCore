@@ -1,6 +1,6 @@
-name: catplugin
+name: sunkplugins
 version: '1.0.5'
-main: cn.onea.catplugin.CatPlugin
+main: cn.onea.sunkplugin.SunkPlugins
 api-version: '1.21'
 authors: [onea]
 commands:
@@ -11,7 +11,7 @@ commands:
     description: catkill
     usage: /<command>
   catconfig:
-    description: catkill
+    description: raffle
     usage: /<command>
 permissions:
   cat.admin:
