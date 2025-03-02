@@ -1,5 +1,5 @@
 name: catplugin
-version: '1.0.4'
+version: '1.0.5'
 main: cn.onea.catplugin.CatPlugin
 api-version: '1.21'
 authors: [onea]

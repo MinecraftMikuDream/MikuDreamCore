@@ -11,10 +11,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Random;
+
 public class CatPlugin extends JavaPlugin implements Listener {
     private boolean featureEnabled = true;
     private static final String ADMIN_PERMISSION = "cat.admin";
-    private static final String CONFIG_KEY = "enabled";
+    private static final String CONFIG_KEY = "kill_enabled";
 
     @Override
     public void onEnable() {
@@ -25,9 +27,9 @@ public class CatPlugin extends JavaPlugin implements Listener {
         // 检查是否存在 home 节点
         if (!getConfig().contains("home")) {
             // 如果没有则设置默认值
-            getConfig().set("home.x", 9);
-            getConfig().set("home.y", 96);
-            getConfig().set("home.z", 20);
+            getConfig().set("home.x", 0);
+            getConfig().set("home.y", 0);
+            getConfig().set("home.z", 0);
             saveConfig();
             getLogger().info("已创建 home 配置项");
         } else {
@@ -51,15 +53,47 @@ public class CatPlugin extends JavaPlugin implements Listener {
             handleCatkillCommand(sender);
             return true;
         }
-        if (cmd.getName().equalsIgnoreCase("hub")) {
+        else if (cmd.getName().equalsIgnoreCase("hub")) {
             handleHubCommand(sender);
             return true;
         }
-        if (cmd.getName().equalsIgnoreCase("catconfig")) {
+        else if (cmd.getName().equalsIgnoreCase("catconfig")) {
             handleCatConfigCommand(sender, args);
             return true;
         }
+        else if (cmd.getName().equalsIgnoreCase("raffle")) {
+            handleraffleCommand(sender);
+            return true;
+        }
         return false;
+    }
+
+    private void handleraffleCommand(CommandSender sender){
+        Random rand = new Random();
+        int min = 1;
+        int max = 10;
+        int randomNum = rand.nextInt(max - min + 1) + min;
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("只有玩家可以使用这个命令喵！");
+            return;
+        }
+        if(randomNum == 1)
+        {
+            String command = "money + " + sender.getName() + " 1000";
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),command);
+            Bukkit.broadcastMessage("§e玩家 " + sender.getName() + " 得到了1000元!");
+        }
+        else if(randomNum == 2)
+        {
+            String command = "msg " + sender.getName() + " 没中奖！";
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),command);
+        }
+        else{
+            String command = "msg " + sender.getName() + " 再来一次";
+            String command_1 = "raffle " + sender.getName();
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),command);
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),command_1);
+        }
     }
 
     private void handleCatkillCommand(CommandSender sender) {
