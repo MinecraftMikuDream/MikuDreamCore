@@ -69,7 +69,6 @@ tasks.register('customJar', Jar) {
         configurations.embed.collect {
             it.isDirectory() ? it : zipTree(it).matching {
                 exclude 'META-INF/**' // 排除元数据冲突
-                rename 'com/github/benmanes/caffeine', 'sunk/shaded/caffeine' // 手动重命名包
             }
         }
     }
