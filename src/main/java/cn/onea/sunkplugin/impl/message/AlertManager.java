@@ -10,18 +10,18 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AlertManager {
-    private final SunkPlugins plugin;
-    private final Map<UUID, Long> lastAlertTime = new ConcurrentHashMap<>();
+    private static SunkPlugins plugin = new SunkPlugins();
+    private static final Map<UUID, Long> lastAlertTime = new ConcurrentHashMap<>();
 
     public AlertManager(SunkPlugins plugin) {
         this.plugin = plugin;
     }
 
-    public void logAction(Player player, String reason) {
+    public static void logAction(Player player, String reason) {
         // 控制台记录
         if (plugin.getConfig().getBoolean("logging.console", true)) {
             String logMsg = String.format("[%s] %s 触发防护 - 原因: %s",
-                    plugin.getName(),
+                    "sunkac",
                     player.getName(),
                     reason);
 
@@ -39,7 +39,7 @@ public class AlertManager {
 
             if (now - last > plugin.getConfig().getLong("alerts.cooldown", 2000L)) {
                 String alertMsg = plugin.getConfig().getString("messages.alert",
-                        "§c[pcloy] 检测到可疑操作: %player%");
+                        "§c[sunkac] 检测到可疑操作: %player%");
 
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     for (Player admin : Bukkit.getOnlinePlayers()) {

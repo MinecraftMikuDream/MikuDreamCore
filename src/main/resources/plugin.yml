@@ -1,8 +1,10 @@
-name: sunkplugins
+name: SunkPlugins
 version: '1.0.5'
 main: cn.onea.sunkplugin.SunkPlugins
 api-version: '1.21'
 authors: [onea]
+soft-depend: [ProtocolLib]
+website: https://github.com/oneachina/SunkPlugin
 commands:
   hub:
     description: hub

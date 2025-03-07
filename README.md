@@ -5,6 +5,7 @@
 ## License
 
 本仓库使用MIT License
+（部分使用deepseek寻找bug）
 
 ## Version
 

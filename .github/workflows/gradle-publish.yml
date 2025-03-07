@@ -54,4 +54,4 @@ jobs:
         with:
           name: jars
           path: |
-            ./build/libs/sunkplugins-*.jar
+            ./build/libs/SunkPlugins-bukkit-*.jar
