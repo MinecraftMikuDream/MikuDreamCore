@@ -9,11 +9,20 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
+import java.net.http.HttpClient;
 import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class SunkPlugins extends JavaPlugin implements Listener {
+    private final Cache<UUID, PlayerData> playerData = Caffeine.newBuilder()
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build();
     private boolean featureEnabled = true;
     private static final String ADMIN_PERMISSION = "cat.admin";
     private static final String CONFIG_KEY = "kill_enabled";
@@ -23,6 +32,11 @@ public class SunkPlugins extends JavaPlugin implements Listener {
         this.saveDefaultConfig();
         this.featureEnabled = this.getConfig().getBoolean(CONFIG_KEY, true);
         this.getLogger().info("sunkplugins已开启!");
+        new BukkitRunnable() {
+            public void run() {
+                Bukkit.getOnlinePlayers().forEach(p -> analyze(p.getUniqueId()));
+            }
+        }.runTaskTimerAsynchronously(this, 0, 20);
 
         // 检查是否存在 home 节点
         if (!getConfig().contains("home")) {
@@ -38,6 +52,9 @@ public class SunkPlugins extends JavaPlugin implements Listener {
 
         Bukkit.getPluginManager().registerEvents(this, this);
 
+    }
+
+    private void analyze(UUID uniqueId) {
     }
 
     @Override
