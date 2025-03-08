@@ -2,13 +2,8 @@ plugins {
     id 'java'
 }
 
-group = 'cn.onea'
-version = '1.0.7'
-
-configurations {
-    embed
-    implementation.extendsFrom(embed)
-}
+group = 'cn.onea.sunkplugin'
+version = '1.1.1'
 
 repositories {
     mavenCentral()
@@ -27,8 +22,6 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     implementation group: "com.comphenix.protocol", name: "ProtocolLib", version: "5.3.0";
-    implementation "me.clip:placeholderapi:2.11.5"
-    embed 'com.github.ben-manes.caffeine:caffeine:3.1.8'
     implementation "org.apache.commons:commons-math3:3.6.1"
 }
 
@@ -61,20 +54,3 @@ processResources {
         expand props
     }
 }
-
-tasks.register('customJar', Jar) {
-    archiveClassifier = ''
-    from sourceSets.main.output
-    from {
-        configurations.embed.collect {
-            it.isDirectory() ? it : zipTree(it).matching {
-                exclude 'META-INF/**' // 排除元数据冲突
-            }
-        }
-    }
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
-
-// 替换默认构建任务
-tasks.build.dependsOn tasks.customJar
-tasks.jar.enabled = false
