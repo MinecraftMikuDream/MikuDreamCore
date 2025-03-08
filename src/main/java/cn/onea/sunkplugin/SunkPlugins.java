@@ -1,58 +1,49 @@
 package cn.onea.sunkplugin;
 
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.jetbrains.annotations.NotNull;
+import cn.onea.sunkplugin.anitcheat.impl.Protocol.PacketListener;
+import cn.onea.sunkplugin.command.Hub;
+import cn.onea.sunkplugin.command.SConfigCommand;
+import cn.onea.sunkplugin.command.SKill;
+import cn.onea.sunkplugin.command.SRaffle;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-
-import java.util.HashSet;
-import java.util.Set;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
+import java.io.InputStream;
 import java.util.UUID;
-import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Trident;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.ItemStack;
-
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-public class SunkPlugins extends JavaPlugin implements Listener {
+public class SunkPlugins extends JavaPlugin implements SunkInterface {
     private final Cache<UUID, PlayerData> playerData = Caffeine.newBuilder()
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .build();
-    private boolean featureEnabled = true;
-    private static final String ADMIN_PERMISSION = "cat.admin";
+    public static boolean featureEnabled = true;
     private static final String CONFIG_KEY = "kill_enabled";
-    private final Set<UUID> readyThrow = new HashSet<UUID>();
+    public int homex = getConfig().getInt("home.x");
+    public int homey = getConfig().getInt("home.y");
+    public int homez = getConfig().getInt("home.z");
 
     @Override
-    public void onEnable() {
-        this.saveDefaultConfig();
-        this.featureEnabled = this.getConfig().getBoolean(CONFIG_KEY, true);
-        this.getLogger().info("sunkplugins已开启!");
-        new BukkitRunnable() {
-            public void run() {
-                Bukkit.getOnlinePlayers().forEach(p -> analyze(p.getUniqueId()));
-            }
-        }.runTaskTimerAsynchronously(this, 0, 20);
+    public void onEnable(@NotNull CommandSender sender) {
+        InputStream defConfigStream = this.getResource("config.yml");
+        if (defConfigStream != null) {
+            this.reloadConfig();
+        }
+        else {
+            this.getLogger().warning("无法加载默认配置文件！");
+            this.saveDefaultConfig();
+        }
 
+        PacketListener packetListener = new PacketListener();
+        packetListener.register();
+
+        featureEnabled = this.getConfig().getBoolean(CONFIG_KEY, true);
         // 检查是否存在 home 节点
         if (!getConfig().contains("home")) {
             // 如果没有则设置默认值
@@ -65,166 +56,22 @@ public class SunkPlugins extends JavaPlugin implements Listener {
             getLogger().info("home 配置项已存在，跳过创建");
         }
 
+        // 注册监听器
         Bukkit.getPluginManager().registerEvents(this, this);
 
-    }
-
-    private void analyze(UUID uniqueId) {
+        getCommand("skill").setExecutor(new SKill());
+        getCommand("sconfig").setExecutor(new SConfigCommand());
+        getCommand("sraffle").setExecutor(new SRaffle());
+        getCommand("hub").setExecutor(new Hub());
     }
 
     @Override
     public void onDisable() {
-        this.getConfig().set(CONFIG_KEY, this.featureEnabled);
+        this.getConfig().set(CONFIG_KEY, featureEnabled);
         this.saveConfig();
-        this.getLogger().info("sunkplugins已卸载");
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, Command cmd, @NotNull String label, String @NotNull [] args) {
-        if (cmd.getName().equalsIgnoreCase("catkill")) {
-            handleCatkillCommand(sender);
-            return true;
-        }
-        else if (cmd.getName().equalsIgnoreCase("hub")) {
-            handleHubCommand(sender);
-            return true;
-        }
-        else if (cmd.getName().equalsIgnoreCase("catconfig")) {
-            handleCatConfigCommand(sender, args);
-            return true;
-        }
-        else if (cmd.getName().equalsIgnoreCase("raffle")) {
-            handleraffleCommand(sender);
-            return true;
-        }
-        return false;
-    }
-
-    private void handleraffleCommand(CommandSender sender){
-        Random rand = new Random();
-        int min = 1;
-        int max = 10;
-        int randomNum = rand.nextInt(max - min + 1) + min;
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage("只有玩家可以使用这个命令喵！");
-            return;
-        }
-        if(randomNum == 1)
-        {
-            String command = "money + " + sender.getName() + " 1000";
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),command);
-            Bukkit.broadcastMessage("§e玩家 " + sender.getName() + " 得到了1000元!");
-        }
-        else if(randomNum == 2)
-        {
-            String command = "msg " + sender.getName() + " 没中奖！";
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),command);
-        }
-        else{
-            String command = "msg " + sender.getName() + " 再来一次";
-            String command_1 = "raffle " + sender.getName();
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),command);
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),command_1);
-        }
-    }
-
-    private void handleCatkillCommand(CommandSender sender) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage("只有玩家可以使用这个命令喵！");
-            return;
-        }
-        if (!this.featureEnabled) {
-            player.sendMessage("§c当前自杀功能已被管理员关闭喵！");
-            return;
-        }
-        // 玩家自杀
-        player.setHealth(0.0);
-        player.sendMessage("§6你已成功自杀喵");
-        Bukkit.broadcastMessage("§e玩家 " + player.getName() + " 选择了自我了断喵，可惜捏");
-    }
-
-    private void handleHubCommand(CommandSender sender) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage("只有玩家可以使用这个命令喵！");
-            return;
-        }
-        // 使用配置中的 home 坐标
-        int x = getConfig().getInt("home.x");
-        int y = getConfig().getInt("home.y");
-        int z = getConfig().getInt("home.z");
-        String command = "execute in minecraft:the_void run minecraft:tp " + player.getName() + " " + x + " " + y + " " + z;
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
-        // 设置玩家为冒险模式
-        player.setGameMode(GameMode.ADVENTURE);
-        player.sendMessage("§6传送成功！你已进入主城，当前游戏模式为冒险。");
-    }
-
-    /**
-     * 处理 /catconfig 命令
-     * 支持以下两种格式：
-     * /catconfig set home <x> <y> <z>
-     * /catconfig set catkill <true|false>
-     */
-    private void handleCatConfigCommand(CommandSender sender, String[] args) {
-        if (!sender.hasPermission(ADMIN_PERMISSION)) {
-            sender.sendMessage("§c你没有权限使用该命令！");
-            return;
-        }
-        if (args.length < 2) {
-            sender.sendMessage("§6用法: /catconfig set <home|catkill> ...");
-            return;
-        }
-        if (!args[0].equalsIgnoreCase("set")) {
-            sender.sendMessage("§6用法: /catconfig set <home|catkill> ...");
-            return;
-        }
-
-        // 处理 home 坐标修改
-        if (args[1].equalsIgnoreCase("home")) {
-            if (args.length != 5) {
-                sender.sendMessage("§6用法: /catconfig set home <x> <y> <z>");
-                return;
-            }
-            try {
-                int x = Integer.parseInt(args[2]);
-                int y = Integer.parseInt(args[3]);
-                int z = Integer.parseInt(args[4]);
-                // 更新配置
-                getConfig().set("home.x", x);
-                getConfig().set("home.y", y);
-                getConfig().set("home.z", z);
-                saveConfig();
-                sender.sendMessage("§a已将 home 坐标修改为: " + x + ", " + y + ", " + z);
-                getLogger().info("Home 坐标更新为: " + x + ", " + y + ", " + z);
-            } catch (NumberFormatException e) {
-                sender.sendMessage("§c坐标必须为整数！");
-            }
-            return;
-        }
-
-        // 处理 catkill 功能开关修改
-        if (args[1].equalsIgnoreCase("catkill")) {
-            if (args.length != 3) {
-                sender.sendMessage("§6用法: /catconfig set catkill <true|false>");
-                return;
-            }
-            String value = args[2].toLowerCase();
-            if (value.equals("true") || value.equals("false")) {
-                this.featureEnabled = Boolean.parseBoolean(value);
-                // 同步更新配置文件
-                getConfig().set(CONFIG_KEY, this.featureEnabled);
-                saveConfig();
-                sender.sendMessage("§a已将 catkill 功能设置为: " + this.featureEnabled);
-                getLogger().info("catkill 功能设置为: " + this.featureEnabled);
-            } else {
-                sender.sendMessage("§c参数错误，必须为 true 或 false");
-            }
-            return;
-        }
-
-        sender.sendMessage("§6用法: /catconfig set <home|catkill> ...");
-    }
-
     @EventHandler
     public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
         if (event.getFrom().getName().equalsIgnoreCase("the_void")) {
@@ -236,44 +83,22 @@ public class SunkPlugins extends JavaPlugin implements Listener {
         }
     }
 
-//    @EventHandler
-//    public void onProjectileLaunch(ProjectileLaunchEvent event) {
-//        if (event.getEntity() instanceof Trident && event.getEntity().getShooter() instanceof Player) {
-//            Player player = (Player)((Object)event.getEntity().getShooter());
-//            this.readyThrow.remove(player.getUniqueId());
-//        }
-//    }
-//
-//    @EventHandler
-//    public void onPlayerInteract(PlayerInteractEvent event) {
-//        ItemStack item = event.getItem();
-//        if (item == null) {
-//            return;
-//        }
-//        if (!(event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK || item.getType() != Material.TRIDENT || item.containsEnchantment(Enchantment.RIPTIDE))) {
-//            this.readyThrow.add(event.getPlayer().getUniqueId());
-//        }
-//    }
-//
-//    @EventHandler(priority=EventPriority.LOWEST)
-//    public void onInventoryClick(InventoryClickEvent event) {
-//        HumanEntity humanEntity = event.getWhoClicked();
-//        if (this.readyThrow.contains(humanEntity.getUniqueId())) {
-//            event.setCancelled(true);
-//        }
-//    }
-//
-//    @EventHandler
-//    public void onPlayerItemHeld(PlayerItemHeldEvent event) {
-//        Player player = event.getPlayer();
-//        ItemStack itemStack = player.getInventory().getItem(event.getNewSlot());
-//        if (itemStack == null || itemStack.getType() != Material.TRIDENT) {
-//            this.readyThrow.remove(player.getUniqueId());
-//        }
-//    }
-//
-//    @EventHandler
-//    public void onPlayerQuit(PlayerQuitEvent event) {
-//        this.readyThrow.remove(event.getPlayer().getUniqueId());
-//    }
+    @Override
+    public void updatehome_xyz(int x, int y, int z) {
+        getConfig().set("home.x", x);
+        getConfig().set("home.y", y);
+        getConfig().set("home.z", z);
+        homex = getConfig().getInt("home.x");
+        homey = getConfig().getInt("home.y");
+        homez = getConfig().getInt("home.z");
+        saveConfig();
+    }
+
+    @Override
+    public void setcatkill(boolean flag, CommandSender sender) {
+        getConfig().set(CONFIG_KEY, flag);
+        saveConfig();
+        sender.sendMessage("§a已将 catkill 功能设置为: " + featureEnabled);
+        getLogger().info("catkill 功能设置为: " + featureEnabled);
+    }
 }
