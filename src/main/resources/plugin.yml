@@ -1,10 +1,10 @@
 name: SunkPlugins
-version: '1.1.0'
+version: '1.1.2'
 main: cn.onea.sunkplugin.SunkPlugins
 api-version: '1.21'
 authors: [onea]
 folia-supported: true
-soft-depend: [ProtocolLib]
+soft-depend: [ProtocolLib,TheNewEconomy]
 website: https://github.com/oneachina/SunkPlugin
 commands:
   hub:
@@ -29,3 +29,6 @@ permissions:
   sunk.vanish:
     default: op
     description: vanish
+  sunk.raffle.admin:
+    description: 允许无限抽奖
+    default: op
