@@ -13,6 +13,7 @@ public class AlertManager {
     private static SunkPlugins plugin = new SunkPlugins();
     private static final Map<UUID, Long> lastAlertTime = new ConcurrentHashMap<>();
 
+
     public AlertManager(SunkPlugins plugin) {
         this.plugin = plugin;
     }
