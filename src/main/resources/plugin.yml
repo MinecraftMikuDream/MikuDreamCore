@@ -1,25 +1,31 @@
 name: SunkPlugins
-version: '1.0.7'
+version: '1.1.0'
 main: cn.onea.sunkplugin.SunkPlugins
 api-version: '1.21'
 authors: [onea]
+folia-supported: true
 soft-depend: [ProtocolLib]
 website: https://github.com/oneachina/SunkPlugin
 commands:
   hub:
     description: hub
-    usage: /<command>
-  catkill:
-    description: catkill
-    usage: /<command>
-  catconfig:
-    description: catconfig
-    usage: /<command>
-  raffle:
-    description: raffle
-    usage: /<command>
+  skill:
+    description: skill
+  sconfig:
+    description: sconfig
+  sraffle:
+    description: sraffle
+  v:
+    description:
+      a gemini command
+  vanish:
+    description:
+      a gemini command
 
 permissions:
-  cat.admin:
+  sunk.config:
     description: 管理功能喵
     default: op
+  sunk.vanish:
+    default: op
+    description: vanish

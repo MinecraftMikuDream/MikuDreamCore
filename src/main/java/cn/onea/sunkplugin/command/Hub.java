@@ -10,7 +10,12 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class Hub implements CommandExecutor {
-    SunkPlugins sunkPlugins = new SunkPlugins();
+    private final SunkPlugins plugin;
+
+    public Hub(SunkPlugins plugin) {
+        this.plugin = plugin;
+    }
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
         if (!(sender instanceof Player player)) {
@@ -18,7 +23,7 @@ public class Hub implements CommandExecutor {
             return false;
         }
         // 使用配置中的 home 坐标
-        String command_1 = "execute in minecraft:the_void run minecraft:tp " + player.getName() + " " + sunkPlugins.homex + " " + sunkPlugins.homey + " " + sunkPlugins.homez;
+        String command_1 = "execute in minecraft:the_void run minecraft:tp " + player.getName() + " " + plugin.homex + " " + plugin.homey + " " + plugin.homez;
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command_1);
         // 设置玩家为冒险模式
         player.setGameMode(GameMode.ADVENTURE);
