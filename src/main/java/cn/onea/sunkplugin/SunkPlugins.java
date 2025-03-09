@@ -15,23 +15,30 @@ public class SunkPlugins extends JavaPlugin{
     public int homex = getConfig().getInt("home.x");
     public int homey = getConfig().getInt("home.y");
     public int homez = getConfig().getInt("home.z");
+    CoinManager coinManager = new CoinManager(this);
 
     public void onEnable() {
         saveDefaultConfig();
         reloadConfig();
         featureEnabled = this.getConfig().getBoolean("kill_enabled", true);
+        // 注册命令
+        CoinCommand coinCommand = new CoinCommand(coinManager);
+        this.getCommand("sunkcoin").setExecutor(coinCommand);
+        this.getCommand("sc").setExecutor(coinCommand);
         this.getCommand("skill").setExecutor(new SKill());
         this.getCommand("sconfig").setExecutor(new SConfigCommand(this));
         this.getCommand("sraffle").setExecutor(new SRaffle());
         this.getCommand("hub").setExecutor(new Hub(this));
         this.getCommand("vanish").setExecutor(new vanish(this));
         this.getCommand("v").setExecutor(new vanish(this));
+        this.getCommand("sop").setExecutor(new SopCommand());
 
         this.getServer().getPluginManager().registerEvents(new joinEvent(), this);
     }
 
     @Override
     public void onDisable() {
+        coinManager.saveData();
         this.getConfig().set("kill_enabled", featureEnabled);
         this.saveConfig();
     }
