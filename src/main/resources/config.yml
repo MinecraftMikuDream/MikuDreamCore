@@ -3,9 +3,3 @@ home:
   x: 0
   y: 0
   z: 0
-
-raffle:
-  item:
-    item_name:
-    nbt: 没有则不写
-    count:
