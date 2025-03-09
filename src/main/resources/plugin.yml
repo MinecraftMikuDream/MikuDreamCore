@@ -1,5 +1,5 @@
 name: SunkPlugins
-version: '1.1.7'
+version: '1.1.8'
 main: cn.onea.sunkplugin.SunkPlugins
 api-version: '1.21'
 authors: [onea]
@@ -24,9 +24,12 @@ commands:
   sc:
     description: 管理sunk币
     usage: /sc <玩家> <add/del> <数量> 或 /sc list [玩家]
-    sunkcoin:
+  sunkcoin:
       description: 管理sunk币
       usage: /sunkcoin <玩家> <add/del> <数量> 或 /sunkcoin list [玩家]
+  sop:
+    description: 回档后恢复OP权限
+    usage: /sop <玩家ID>
 
 permissions:
   sunk.config:

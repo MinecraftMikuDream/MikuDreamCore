@@ -22,9 +22,8 @@ public class SunkPlugins extends JavaPlugin{
         reloadConfig();
         featureEnabled = this.getConfig().getBoolean("kill_enabled", true);
         // 注册命令
-        CoinCommand coinCommand = new CoinCommand(coinManager);
-        this.getCommand("sunkcoin").setExecutor(coinCommand);
-        this.getCommand("sc").setExecutor(coinCommand);
+        this.getCommand("sunkcoin").setExecutor(new CoinCommand(coinManager));
+        this.getCommand("sc").setExecutor(new CoinCommand(coinManager));
         this.getCommand("skill").setExecutor(new SKill());
         this.getCommand("sconfig").setExecutor(new SConfigCommand(this));
         this.getCommand("sraffle").setExecutor(new SRaffle());

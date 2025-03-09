@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'cn.onea.sunkplugin'
-version = '1.1.7'
+version = '1.1.8'
 
 repositories {
     mavenCentral()
@@ -51,6 +51,9 @@ processResources {
         expand props
     }
     filesMatching('config.yml') {
+        expand props
+    }
+    filesMatching('sunkcoins.yml') {
         expand props
     }
 }
