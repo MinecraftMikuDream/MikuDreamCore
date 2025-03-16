@@ -1,5 +1,5 @@
 name: SunkPlugins
-version: '1.1.8'
+version: '1.2.0'
 main: cn.onea.sunkplugin.SunkPlugins
 api-version: '1.21'
 authors: [onea]
@@ -41,9 +41,6 @@ permissions:
   sunk.raffle.admin:
     description: 允许无限抽奖
     default: op
-  sunk.sop:
-    description: 回档专用
-    default: op  # 仅限OP使用此命令
   sunk.coin.admin:
     description: 允许管理sunk币
     default: op
