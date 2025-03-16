@@ -1,5 +1,7 @@
 package cn.onea.sunkplugin;
 
+import cn.onea.sunkplugin.BreakBoard.BreakBoardManager;
+import cn.onea.sunkplugin.BreakBoard.BreakListener;
 import cn.onea.sunkplugin.command.*;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
@@ -7,8 +9,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
-import java.io.InputStream;
 
 public class SunkPlugins extends JavaPlugin{
     public static boolean featureEnabled = true;
@@ -22,6 +22,9 @@ public class SunkPlugins extends JavaPlugin{
         reloadConfig();
         featureEnabled = this.getConfig().getBoolean("kill_enabled", true);
         // 注册命令
+        BreakBoardManager breakBoardManager = new BreakBoardManager();
+        this.getServer().getPluginManager().registerEvents(new BreakListener(breakBoardManager), this);
+        this.getCommand("sbreakboard").setExecutor(new BreakBoardCommand(breakBoardManager));
         this.getCommand("sunkcoin").setExecutor(new CoinCommand(coinManager));
         this.getCommand("sc").setExecutor(new CoinCommand(coinManager));
         this.getCommand("skill").setExecutor(new SKill());
@@ -30,7 +33,6 @@ public class SunkPlugins extends JavaPlugin{
         this.getCommand("hub").setExecutor(new Hub(this));
         this.getCommand("vanish").setExecutor(new vanish(this));
         this.getCommand("v").setExecutor(new vanish(this));
-        this.getCommand("sop").setExecutor(new SopCommand());
 
         this.getServer().getPluginManager().registerEvents(new joinEvent(), this);
     }

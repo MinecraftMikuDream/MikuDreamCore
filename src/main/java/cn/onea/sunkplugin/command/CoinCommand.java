@@ -78,11 +78,11 @@ public class CoinCommand implements CommandExecutor {
     private boolean handleList(CommandSender sender, String[] args) {
         // 检查是否为OP或玩家查询自己
         if (args.length >= 1 && args[0].equalsIgnoreCase("list")) {
-            if (!sender.hasPermission(PERMISSION)) {
-                sender.sendMessage("§c你只能查看自己的余额！");
-                return true;
-            }
             if (args.length >= 2) {
+                if (!sender.hasPermission(PERMISSION)) {
+                    sender.sendMessage("§c你只能查看自己的余额！");
+                    return true;
+                }
                 // 查询他人
                 String targetName = args[1];
                 Player target = Bukkit.getPlayer(targetName);

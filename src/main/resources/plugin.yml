@@ -27,9 +27,9 @@ commands:
   sunkcoin:
       description: 管理sunk币
       usage: /sunkcoin <玩家> <add/del> <数量> 或 /sunkcoin list [玩家]
-  sop:
-    description: 回档后恢复OP权限
-    usage: /sop <玩家ID>
+  sbreakboard:
+    description: 切换挖掘榜显示
+    usage: /sbreakboard
 
 permissions:
   sunk.config:
@@ -47,3 +47,6 @@ permissions:
   sunk.coin.admin:
     description: 允许管理sunk币
     default: op
+  sunk.breakboard:
+    description: 允许使用挖掘榜
+    default: true
