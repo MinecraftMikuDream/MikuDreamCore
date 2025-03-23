@@ -52,7 +52,4 @@ processResources {
     filesMatching('config.yml') {
         expand props
     }
-    filesMatching('sunkcoins.yml') {
-        expand props
-    }
 }

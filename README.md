@@ -37,7 +37,7 @@
 本仓库使用GPL3.0 License
 
 ## Version
-
-Plugin：SunkPlugin b1 1.0.5
 Minecraft: 1.21.4
-Server core: paper/spigot (或及其分支(leaves) )
+Server core: paper/spigot
+
+我从来没有觉得玩开源开心过
