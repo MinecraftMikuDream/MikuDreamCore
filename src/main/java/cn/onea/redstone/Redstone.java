@@ -1,8 +1,8 @@
-package cn.onea.sunkplugin;
+package cn.onea.redstone;
 
-import cn.onea.sunkplugin.BreakBoard.BreakBoardManager;
-import cn.onea.sunkplugin.BreakBoard.BreakListener;
-import cn.onea.sunkplugin.command.*;
+import cn.onea.redstone.BreakBoard.BreakBoardManager;
+import cn.onea.redstone.BreakBoard.BreakListener;
+import cn.onea.redstone.command.*;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -10,12 +10,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class SunkPlugins extends JavaPlugin{
+public class Redstone extends JavaPlugin{
     public static boolean featureEnabled = true;
     public int homex = getConfig().getInt("home.x");
     public int homey = getConfig().getInt("home.y");
     public int homez = getConfig().getInt("home.z");
-    CoinManager coinManager = new CoinManager(this);
 
     public void onEnable() {
         saveDefaultConfig();
@@ -25,11 +24,8 @@ public class SunkPlugins extends JavaPlugin{
         BreakBoardManager breakBoardManager = new BreakBoardManager();
         this.getServer().getPluginManager().registerEvents(new BreakListener(breakBoardManager), this);
         this.getCommand("sbreakboard").setExecutor(new BreakBoardCommand(breakBoardManager));
-        this.getCommand("sunkcoin").setExecutor(new CoinCommand(coinManager));
-        this.getCommand("sc").setExecutor(new CoinCommand(coinManager));
         this.getCommand("skill").setExecutor(new SKill());
         this.getCommand("sconfig").setExecutor(new SConfigCommand(this));
-        this.getCommand("sraffle").setExecutor(new SRaffle());
         this.getCommand("hub").setExecutor(new Hub(this));
         this.getCommand("vanish").setExecutor(new vanish(this));
         this.getCommand("v").setExecutor(new vanish(this));
@@ -39,7 +35,6 @@ public class SunkPlugins extends JavaPlugin{
 
     @Override
     public void onDisable() {
-        coinManager.saveData();
         this.getConfig().set("kill_enabled", featureEnabled);
         this.saveConfig();
     }
@@ -68,7 +63,7 @@ public class SunkPlugins extends JavaPlugin{
     public void setcatkill(boolean flag, CommandSender sender) {
         getConfig().set("kill_enabled", flag);
         saveConfig();
-        sender.sendMessage("§a已将 catkill 功能设置为: " + featureEnabled);
-        getLogger().info("catkill 功能设置为: " + featureEnabled);
+        sender.sendMessage("§a已将 skill 功能设置为: " + featureEnabled);
+        getLogger().info("skill 功能设置为: " + featureEnabled);
     }
 }

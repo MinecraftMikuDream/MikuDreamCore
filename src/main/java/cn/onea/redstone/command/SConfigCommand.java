@@ -1,18 +1,18 @@
-package cn.onea.sunkplugin.command;
+package cn.onea.redstone.command;
 
-import cn.onea.sunkplugin.SunkPlugins;
+import cn.onea.redstone.Redstone;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-import static cn.onea.sunkplugin.SunkPlugins.featureEnabled;
+import static cn.onea.redstone.Redstone.featureEnabled;
 import static org.bukkit.Bukkit.getLogger;
 
 public class SConfigCommand implements CommandExecutor {
     private static final String ADMIN_PERMISSION = "sunk.config";
-    private final SunkPlugins plugin;
-    public SConfigCommand(SunkPlugins plugin) {
+    private final Redstone plugin;
+    public SConfigCommand(Redstone plugin) {
         this.plugin = plugin;
     }
     @Override

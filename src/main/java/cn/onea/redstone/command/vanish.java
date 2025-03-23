@@ -1,6 +1,6 @@
-package cn.onea.sunkplugin.command;
+package cn.onea.redstone.command;
 
-import cn.onea.sunkplugin.SunkPlugins;
+import cn.onea.redstone.Redstone;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -9,9 +9,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class vanish implements CommandExecutor {
-    private final SunkPlugins plugin;
+    private final Redstone plugin;
 
-    public vanish(SunkPlugins plugin) {
+    public vanish(Redstone plugin) {
         this.plugin = plugin;
     }
 

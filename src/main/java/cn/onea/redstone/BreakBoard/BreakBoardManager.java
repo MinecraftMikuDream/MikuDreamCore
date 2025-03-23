@@ -1,4 +1,4 @@
-package cn.onea.sunkplugin.BreakBoard;
+package cn.onea.redstone.BreakBoard;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;

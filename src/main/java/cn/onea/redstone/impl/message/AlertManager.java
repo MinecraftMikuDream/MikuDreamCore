@@ -1,6 +1,6 @@
-package cn.onea.sunkplugin.impl.message;
+package cn.onea.redstone.impl.message;
 
-import cn.onea.sunkplugin.SunkPlugins;
+import cn.onea.redstone.Redstone;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -10,11 +10,11 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AlertManager {
-    private static SunkPlugins plugin = new SunkPlugins();
+    private static Redstone plugin = new Redstone();
     private static final Map<UUID, Long> lastAlertTime = new ConcurrentHashMap<>();
 
 
-    public AlertManager(SunkPlugins plugin) {
+    public AlertManager(Redstone plugin) {
         this.plugin = plugin;
     }
 

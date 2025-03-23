@@ -1,6 +1,6 @@
-package cn.onea.sunkplugin.anitcheat.impl.DupeCheck;
+package cn.onea.redstone.anitcheat.impl.DupeCheck;
 
-import cn.onea.sunkplugin.impl.message.AlertManager;
+import cn.onea.redstone.impl.message.AlertManager;
 import org.bukkit.event.Listener;
 import java.util.HashSet;
 import java.util.Set;

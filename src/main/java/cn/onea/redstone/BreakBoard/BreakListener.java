@@ -1,4 +1,4 @@
-package cn.onea.sunkplugin.BreakBoard;
+package cn.onea.redstone.BreakBoard;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

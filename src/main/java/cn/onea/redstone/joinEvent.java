@@ -1,11 +1,10 @@
-package cn.onea.sunkplugin;
+package cn.onea.redstone;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.plugin.Plugin;
 
 public class joinEvent
         implements Listener {

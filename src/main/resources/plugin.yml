@@ -1,6 +1,6 @@
-name: SunkPlugins
+name: Redstone
 version: '1.2.0'
-main: cn.onea.sunkplugin.SunkPlugins
+main: cn.onea.redstone.Redstone
 api-version: '1.21'
 authors: [onea]
 folia-supported: true
@@ -21,12 +21,6 @@ commands:
   vanish:
     description:
       a gemini command
-  sc:
-    description: 管理sunk币
-    usage: /sc <玩家> <add/del> <数量> 或 /sc list [玩家]
-  sunkcoin:
-      description: 管理sunk币
-      usage: /sunkcoin <玩家> <add/del> <数量> 或 /sunkcoin list [玩家]
   sbreakboard:
     description: 切换挖掘榜显示
     usage: /sbreakboard

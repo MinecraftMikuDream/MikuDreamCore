@@ -1,6 +1,5 @@
-package cn.onea.sunkplugin.command;
+package cn.onea.redstone.command;
 
-import cn.onea.sunkplugin.SunkPlugins;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -8,7 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import static cn.onea.sunkplugin.SunkPlugins.featureEnabled;
+import static cn.onea.redstone.Redstone.featureEnabled;
 
 public class SKill implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {

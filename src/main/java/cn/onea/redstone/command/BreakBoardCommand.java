@@ -1,6 +1,6 @@
-package cn.onea.sunkplugin.command;
+package cn.onea.redstone.command;
 
-import cn.onea.sunkplugin.BreakBoard.BreakBoardManager;
+import cn.onea.redstone.BreakBoard.BreakBoardManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
