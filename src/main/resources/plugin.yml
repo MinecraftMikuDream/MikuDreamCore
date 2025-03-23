@@ -1,5 +1,5 @@
 name: Redstone
-version: '1.2.0'
+version: '1.0.12'
 main: cn.onea.redstone.Redstone
 api-version: '1.21'
 authors: [onea]
