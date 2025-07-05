@@ -14,8 +14,11 @@
 - [GitHub Issues](https://github.com/oneachina/MikuDreamCore/issues)
 
 ## ⚠️ 重要声明
-最好不要使用via（跨版本插件），这可能会导致一些问题。
-Via 会修改客户端和服务器之间的通信，所以我无法解决它导致的所有问题。
+最好不要使用via（跨版本插件），这可能会导致一些问题
+
+Via 会修改客户端和服务器之间的通信，所以我无法解决它导致的所有问题
+
+Geyser 也是同样的
 
 ## License
 
