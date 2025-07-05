@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SunkPlugins-bukkit.main.iml" filepath="$PROJECT_DIR$/.idea/modules/SunkPlugins-bukkit.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SunkPlugins-bukkit.test.iml" filepath="$PROJECT_DIR$/.idea/modules/SunkPlugins-bukkit.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Redstone-bukkit.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Redstone-bukkit.main.iml" />
     </modules>
   </component>
 </project>

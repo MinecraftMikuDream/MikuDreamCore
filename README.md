@@ -8,7 +8,7 @@
 <h3 align="center">Redstone</h3>
 
   <p align="center">
-    致力于回复被mojang修复的原版特性的Paper plugin
+    生电Paper plugin
     <br />
     <a href="https://github.com/oneachina/Redstone/issues">Report Bug</a>
     ·
@@ -35,4 +35,3 @@ Via 会修改客户端和服务器之间的通信，所以我无法解决它导�
 Minecraft: 1.21.4
 Server core: paper/spigot
 
-我从来没有觉得玩开源开心过
