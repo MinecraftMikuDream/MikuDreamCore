@@ -58,13 +58,13 @@ public class MikuDream extends JavaPlugin implements Listener {
         }
     }
 
-    public void updatehome_xyz(int x, int y, int z) {
-        getConfig().set("home.x", x);
-        getConfig().set("home.y", y);
-        getConfig().set("home.z", z);
-        lobby_x = getConfig().getInt("home.x");
-        lobby_y = getConfig().getInt("home.y");
-        lobby_z = getConfig().getInt("home.z");
+    public void updatelobby_xyz(int x, int y, int z) {
+        getConfig().set("lobby.x", x);
+        getConfig().set("lobby.y", y);
+        getConfig().set("lobby.z", z);
+        lobby_x = getConfig().getInt("lobby.x");
+        lobby_y = getConfig().getInt("lobby.y");
+        lobby_z = getConfig().getInt("lobby.z");
         saveConfig();
     }
 

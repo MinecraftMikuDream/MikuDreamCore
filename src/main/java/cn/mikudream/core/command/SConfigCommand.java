@@ -31,9 +31,9 @@ public class SConfigCommand implements CommandExecutor {
         }
 
         // 处理 home 坐标修改
-        if (args[1].equalsIgnoreCase("home")) {
+        if (args[1].equalsIgnoreCase("lobby")) {
             if (args.length != 5) {
-                sender.sendMessage("§6用法: /catconfig set home <x> <y> <z>");
+                sender.sendMessage("§6用法: /catconfig set lobby <x> <y> <z>");
                 return false;
             }
             try {
@@ -41,7 +41,7 @@ public class SConfigCommand implements CommandExecutor {
                 int y = Integer.parseInt(args[3]);
                 int z = Integer.parseInt(args[4]);
                 // 更新配置
-                plugin.updatehome_xyz(x, y, z);
+                plugin.updatelobby_xyz(x, y, z);
                 sender.sendMessage("§a已将 home 坐标修改为: " + x + ", " + y + ", " + z);
                 getLogger().info("Home 坐标更新为: " + x + ", " + y + ", " + z);
                 return true;
@@ -69,7 +69,7 @@ public class SConfigCommand implements CommandExecutor {
             return false;
         }
 
-        sender.sendMessage("§6用法: /catconfig set <home|skill> ...");
+        sender.sendMessage("§6用法: /catconfig set <lobby|skill> ...");
         return false;
     }
 }
