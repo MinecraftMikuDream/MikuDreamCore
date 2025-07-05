@@ -1,27 +1,17 @@
-<!-- PROJECT LOGO -->
-<br />
-<div align="center">
-  <a href="https://github.com/oneachina/Redstone/">
-    <img src="logo.png" alt="Logo" width="100" height="100">
-  </a>
-
-<h3 align="center">Redstone</h3>
+<h3 align="center">MikuDream Core</h3>
 
   <p align="center">
-    生电Paper plugin
-    <br />
     <a href="https://github.com/oneachina/Redstone/issues">Report Bug</a>
     ·
     <a href="https://github.com/oneachina/Redstone/issues">Request Feature</a>
   </p>
-</div>
 
 ## 📂 项目仓库
-- **GitHub**：[Redstone](https://github.com/oneachina/Redstone)
-- **更新日志**：[查看提交记录](https://github.com/oneachina/Redstone/commits/main)
+- **GitHub**：[MikuDream Core](https://github.com/oneachina/MikuDreamCore)
+- **更新日志**：[查看提交记录](https://github.com/oneachina/MikuDreamCore/commits/main)
 
 ## 🛠 问题反馈
-- [GitHub Issues](https://github.com/oneachina/Redstone/issues)
+- [GitHub Issues](https://github.com/oneachina/MikuDreamCore/issues)
 
 ## ⚠️ 重要声明
 最好不要使用via（跨版本插件），这可能会导致一些问题。
@@ -33,5 +23,6 @@ Via 会修改客户端和服务器之间的通信，所以我无法解决它导�
 
 ## Version
 Minecraft: 1.21.4
+
 Server core: paper/spigot
 
