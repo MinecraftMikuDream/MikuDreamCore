@@ -1,11 +1,9 @@
-package cn.onea.redstone.anitcheat.impl.DupeCheck;
+package cn.mikudream.core.Fixes;
 
-import cn.onea.redstone.impl.message.AlertManager;
 import org.bukkit.event.Listener;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -24,7 +22,7 @@ import org.bukkit.inventory.ItemStack;
 
 import static org.bukkit.Bukkit.getLogger;
 
-public class DupeCheck implements Listener {
+public class CopyDupe implements Listener {
     private final Set<UUID> readyThrow = new HashSet<UUID>();
     @EventHandler
     public void onProjectileLaunch(ProjectileLaunchEvent event) {
@@ -43,7 +41,6 @@ public class DupeCheck implements Listener {
         }
         if (!(event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK || item.getType() != Material.TRIDENT || item.containsEnchantment(Enchantment.RIPTIDE))) {
             this.readyThrow.add(event.getPlayer().getUniqueId());
-            flagSuspicious(player);
         }
     }
 
@@ -53,7 +50,6 @@ public class DupeCheck implements Listener {
         Player player = playerItemHeldEvent.getPlayer();
         if (this.readyThrow.contains(humanEntity.getUniqueId())) {
             event.setCancelled(true);
-            flagSuspicious((Player)humanEntity);
         }
     }
 
@@ -63,18 +59,11 @@ public class DupeCheck implements Listener {
         ItemStack itemStack = player.getInventory().getItem(event.getNewSlot());
         if (itemStack == null || itemStack.getType() != Material.TRIDENT) {
             this.readyThrow.remove(player.getUniqueId());
-            flagSuspicious(player);
         }
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         this.readyThrow.remove(event.getPlayer().getUniqueId());
-    }
-    private void flagSuspicious(Player player) {
-        // 记录可疑行为
-        AlertManager.logAction(player, "TridentC");
-        Logger getLogger = getLogger();
-        getLogger.info(player.getName() + " TridentC");
     }
 }

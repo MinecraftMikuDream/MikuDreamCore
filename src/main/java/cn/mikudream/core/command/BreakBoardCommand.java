@@ -1,6 +1,6 @@
-package cn.onea.redstone.command;
+package cn.mikudream.core.command;
 
-import cn.onea.redstone.BreakBoard.BreakBoardManager;
+import cn.mikudream.core.BreakBoard.BreakBoardManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

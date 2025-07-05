@@ -1,6 +1,6 @@
-package cn.onea.redstone.command;
+package cn.mikudream.core.command;
 
-import cn.onea.redstone.Redstone;
+import cn.mikudream.core.MikuDream;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
@@ -10,9 +10,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class Hub implements CommandExecutor {
-    private final Redstone plugin;
+    private final MikuDream plugin;
 
-    public Hub(Redstone plugin) {
+    public Hub(MikuDream plugin) {
         this.plugin = plugin;
     }
 
@@ -23,7 +23,7 @@ public class Hub implements CommandExecutor {
             return false;
         }
         // 使用配置中的 home 坐标
-        String command_1 = "execute in minecraft:the_void run minecraft:tp " + player.getName() + " " + plugin.homex + " " + plugin.homey + " " + plugin.homez;
+        String command_1 = "execute in " + plugin + " run minecraft:tp " + player.getName() + " " + plugin.lobby_x + " " + plugin.lobby_y + " " + plugin.lobby_z;
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command_1);
         // 设置玩家为冒险模式
         player.setGameMode(GameMode.ADVENTURE);

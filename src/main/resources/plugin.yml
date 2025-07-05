@@ -1,10 +1,10 @@
 name: Redstone
 version: '1.0.12'
-main: cn.onea.redstone.Redstone
+main: cn.mikudream.core.MikuDream
 api-version: '1.21'
 authors: [onea]
 folia-supported: true
-soft-depend: [ProtocolLib,TheNewEconomy]
+soft-depend: [ProtocolLib]
 website: https://github.com/oneachina/SunkPlugin
 commands:
   hub:
@@ -13,31 +13,14 @@ commands:
     description: skill
   sconfig:
     description: sconfig
-  sraffle:
-    description: sraffle
-  v:
-    description:
-      a gemini command
-  vanish:
-    description:
-      a gemini command
   sbreakboard:
-    description: 切换挖掘榜显示
+    description: off & on the breakboard
     usage: /sbreakboard
 
 permissions:
   sunk.config:
-    description: 管理功能喵
-    default: op
-  sunk.vanish:
-    default: op
-    description: vanish
-  sunk.raffle.admin:
-    description: 允许无限抽奖
-    default: op
-  sunk.coin.admin:
-    description: 允许管理sunk币
+    description: config
     default: op
   sunk.breakboard:
-    description: 允许使用挖掘榜
+    description: breakboard
     default: true

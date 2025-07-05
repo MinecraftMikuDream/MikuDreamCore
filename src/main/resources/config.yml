@@ -1,5 +1,14 @@
-kill_enabled: true
-home:
+# Copyright (c) oneachina
+# The project uses the GPL-3 license
+# This configuration is used by MikuDream
+
+# Whether to enable the skill command
+skill: true
+
+# Dimension has overworld , the_end and the_nether
+# Over World and The Nether are not recommended
+lobby:
   x: 0
   y: 0
   z: 0
+  dimension: minecraft:the_end

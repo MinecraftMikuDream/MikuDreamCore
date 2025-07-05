@@ -1,4 +1,4 @@
-package cn.onea.redstone.BreakBoard;
+package cn.mikudream.core.BreakBoard;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

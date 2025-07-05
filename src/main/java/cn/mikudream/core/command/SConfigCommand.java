@@ -1,18 +1,18 @@
-package cn.onea.redstone.command;
+package cn.mikudream.core.command;
 
-import cn.onea.redstone.Redstone;
+import cn.mikudream.core.MikuDream;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-import static cn.onea.redstone.Redstone.featureEnabled;
 import static org.bukkit.Bukkit.getLogger;
+import static cn.mikudream.core.MikuDream.skill_Enabled;
 
 public class SConfigCommand implements CommandExecutor {
     private static final String ADMIN_PERMISSION = "sunk.config";
-    private final Redstone plugin;
-    public SConfigCommand(Redstone plugin) {
+    private final MikuDream plugin;
+    public SConfigCommand(MikuDream plugin) {
         this.plugin = plugin;
     }
     @Override
@@ -59,9 +59,9 @@ public class SConfigCommand implements CommandExecutor {
             }
             String value = args[2].toLowerCase();
             if (value.equals("true") || value.equals("false")) {
-                featureEnabled = Boolean.parseBoolean(value);
+                skill_Enabled = Boolean.parseBoolean(value);
                 // 同步更新配置文件
-                plugin.setcatkill(featureEnabled,sender);
+                plugin.setcatkill(skill_Enabled,sender);
 
             } else {
                 sender.sendMessage("§c参数错误，必须为 true 或 false");
