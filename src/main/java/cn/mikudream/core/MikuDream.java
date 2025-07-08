@@ -1,14 +1,12 @@
 package cn.mikudream.core;
 
-import cn.mikudream.core.BreakBoard.BreakBoardManager;
-import cn.mikudream.core.BreakBoard.BreakListener;
-import cn.mikudream.core.command.BreakBoardCommand;
-import cn.mikudream.core.command.Hub;
-import cn.mikudream.core.command.SConfigCommand;
-import cn.mikudream.core.command.SKill;
-import org.bukkit.Bukkit;
+import cn.mikudream.core.command.SCommand;
+import cn.mikudream.core.feature.scoin.SCoinManager;
+import cn.mikudream.core.feature.scoin.SCoinTabCompleter;
+import cn.mikudream.core.feature.scoin.command.SCoinCommandExecutor;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -22,23 +20,29 @@ public class MikuDream extends JavaPlugin implements Listener {
     public int lobby_z = getConfig().getInt("lobby.z");
     public String lobby_world = getConfig().getString("lobby.dimension");
 
+    public static MikuDream getInstance() {
+        return getPlugin(MikuDream.class);
+    }
+
     public void onEnable() {
+        // config
         saveDefaultConfig();
         reloadConfig();
         skill_Enabled = this.getConfig().getBoolean("Skill", true);
-        // 注册命令
-        BreakBoardManager breakBoardManager = new BreakBoardManager();
-        this.getServer().getPluginManager().registerEvents(new BreakListener(breakBoardManager), this);
-        try {
-            this.getCommand("sbreakboard").setExecutor(new BreakBoardCommand(breakBoardManager));
-            this.getCommand("skill").setExecutor(new SKill());
-            this.getCommand("sconfig").setExecutor(new SConfigCommand(this));
-            this.getCommand("hub").setExecutor(new Hub(this));
-        } catch (Exception e) {
-            Bukkit bukkit;
-            Bukkit.getLogger().severe("注册命令时出现错误: " + e.getMessage());
-        }
 
+        // command
+        SCommand scommand = new SCommand();
+        scommand.init();
+
+        SCoinManager sCoinManager = new SCoinManager(this);
+        SCoinCommandExecutor command = new SCoinCommandExecutor(sCoinManager);
+        PluginCommand scoinCommand = this.getCommand("scoin");
+        if (scoinCommand != null) {
+            scoinCommand.setExecutor(command);
+            scoinCommand.setTabCompleter(new SCoinTabCompleter());
+        } else {
+            getLogger().severe("无法注册 scoin 命令，请检查 plugin.yml 配置");
+        }
     }
 
     @Override
@@ -74,4 +78,5 @@ public class MikuDream extends JavaPlugin implements Listener {
         sender.sendMessage("§a已将 skill 功能设置为: " + skill_Enabled);
         getLogger().info("skill 功能设置为: " + skill_Enabled);
     }
+
 }

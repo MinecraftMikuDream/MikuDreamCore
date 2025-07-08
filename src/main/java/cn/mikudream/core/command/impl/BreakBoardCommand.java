@@ -1,6 +1,6 @@
-package cn.mikudream.core.command;
+package cn.mikudream.core.command.impl;
 
-import cn.mikudream.core.BreakBoard.BreakBoardManager;
+import cn.mikudream.core.feature.breakboard.BreakBoardManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

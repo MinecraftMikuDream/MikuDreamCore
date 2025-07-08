@@ -1,9 +1,10 @@
 plugins {
     id 'java'
+    id 'idea'
 }
 
 group = 'cn.mikudream.core'
-version = '1.0.12'
+version = '1.1.025'
 
 repositories {
     mavenCentral()
@@ -16,12 +17,16 @@ repositories {
         url = "https://oss.sonatype.org/content/groups/public/"
     }
     maven { url "https://repo.dmulloy2.net/repository/public/" }
+    //maven { url = "https://repo.codemc.io/repository/maven-public/" }
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-    implementation group: "com.comphenix.protocol", name: "ProtocolLib", version: "5.3.0";
+    // Paper
+    compileOnly("io.papermc.paper:paper-api:1.21.7-R0.1-SNAPSHOT")
+
+    // Commons Math3
     implementation "org.apache.commons:commons-math3:3.6.1"
+
 }
 
 def targetJavaVersion = 21
@@ -50,6 +55,9 @@ processResources {
         expand props
     }
     filesMatching('config.yml') {
+        expand props
+    }
+    filesMatching('sunkcoins.yml') {
         expand props
     }
 }

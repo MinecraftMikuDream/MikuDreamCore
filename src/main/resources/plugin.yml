@@ -1,10 +1,10 @@
-name: Redstone
-version: '1.0.12'
+name: MikuDreamCore
+version: '1.1.025'
 main: cn.mikudream.core.MikuDream
 api-version: '1.21'
 authors: [onea]
 folia-supported: true
-soft-depend: [ProtocolLib]
+soft-depend: []
 website: https://github.com/oneachina/SunkPlugin
 commands:
   hub:
@@ -16,6 +16,9 @@ commands:
   sbreakboard:
     description: off & on the breakboard
     usage: /sbreakboard
+  scoin:
+    description: 查看scoin
+    usage: /scoin
 
 permissions:
   sunk.config:
@@ -23,4 +26,16 @@ permissions:
     default: op
   sunk.breakboard:
     description: breakboard
+    default: true
+  scoin.commands:
+    description: 使用scoin命令的总权限
+    default: true
+  scoin.list:
+    description: 使用list子命令
+    default: true
+  scoin.add:
+    description: 使用add子命令
+    default: op
+  scoin.version:
+    description: 使用version子命令
     default: true

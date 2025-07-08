@@ -20,8 +20,6 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
-import static org.bukkit.Bukkit.getLogger;
-
 public class CopyDupe implements Listener {
     private final Set<UUID> readyThrow = new HashSet<UUID>();
     @EventHandler

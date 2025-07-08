@@ -1,4 +1,4 @@
-package cn.mikudream.core.BreakBoard;
+package cn.mikudream.core.feature.breakboard;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;

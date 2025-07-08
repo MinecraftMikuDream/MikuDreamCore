@@ -1,4 +1,4 @@
-package cn.mikudream.core.command;
+package cn.mikudream.core.command.impl;
 
 import cn.mikudream.core.MikuDream;
 import org.bukkit.command.Command;
