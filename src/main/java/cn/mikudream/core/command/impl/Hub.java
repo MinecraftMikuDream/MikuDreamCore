@@ -23,7 +23,7 @@ public class Hub implements CommandExecutor {
             return false;
         }
         // 使用配置中的 home 坐标
-        String command_1 = "execute in " + plugin + " run minecraft:tp " + player.getName() + " " + plugin.lobby_x + " " + plugin.lobby_y + " " + plugin.lobby_z;
+        String command_1 = "execute in " + plugin.lobby_world + " run minecraft:tp " + player.getName() + " " + plugin.lobby_x + " " + plugin.lobby_y + " " + plugin.lobby_z;
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command_1);
         // 设置玩家为冒险模式
         player.setGameMode(GameMode.ADVENTURE);
