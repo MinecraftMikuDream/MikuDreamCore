@@ -9,7 +9,7 @@ import java.util.List;
 
 public class SCoinTabCompleter implements TabCompleter {
 
-    private static final List<String> SUBCOMMANDS = List.of("add", "list", "version");
+    private static final List<String> SUBCOMMANDS = List.of("add", "list", "version", "remove", "reload");
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
@@ -32,6 +32,14 @@ public class SCoinTabCompleter implements TabCompleter {
             }
 
             if ("list".equals(subCommand)) {
+                return null;
+            }
+
+            if ("remove".equals(subCommand)) {
+                return null;
+            }
+
+            if ("reload".equals(subCommand)) {
                 return null;
             }
         }

@@ -1,9 +1,7 @@
 package cn.mikudream.core.feature.scoin.command;
 
 import cn.mikudream.core.feature.scoin.SCoinManager;
-import cn.mikudream.core.feature.scoin.command.impl.CommandAdd;
-import cn.mikudream.core.feature.scoin.command.impl.CommandList;
-import cn.mikudream.core.feature.scoin.command.impl.CommandVersion;
+import cn.mikudream.core.feature.scoin.command.impl.*;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -27,6 +25,14 @@ public final class SCoinCommandExecutor implements CommandExecutor {
         CommandList listCommand = new CommandList();
         listCommand.coinManager = scoinManager;
         commands.add(listCommand);
+
+        CommandReload reloadCommand = new CommandReload();
+        reloadCommand.coinManager = scoinManager;
+        commands.add(reloadCommand);
+
+        CommandRemove removeCommand = new CommandRemove();
+        removeCommand.coinManager = scoinManager;
+        commands.add(removeCommand);
     }
 
     @Override

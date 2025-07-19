@@ -10,17 +10,26 @@ import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
-@CommandInfo(name="add", purpose="Add SCoin", syntax="<player> <amount>")
-public class CommandAdd extends SubCommand {
-    int amount;
+@CommandInfo(
+        name = "remove",
+        purpose = "remove scoin"
+)
+public class CommandRemove extends SubCommand {
+    private int amount;
     public SCoinManager coinManager;
-    private String playerName;
 
     @Override
     protected boolean execute(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length < 3) {
-            sender.sendMessage("§6用法: /scoin " + "add" + " <玩家> <数量>");
-            return true;
+        if(!sender.hasPermission("scoin.remove"))
+        {
+            sender.sendMessage("§c你没有权限！");
+            return false;
+        }
+
+        if(args.length < 2)
+        {
+            sender.sendMessage("§c请输入玩家名称！");
+            return false;
         }
         String playerName = args[1];
 
@@ -29,23 +38,23 @@ public class CommandAdd extends SubCommand {
             if(amount < 0)
             {
                 sender.sendMessage("§c数量必须是正数！");
-                return true;
+                return false;
             }
         } catch (NumberFormatException e) {
             sender.sendMessage("§c数量必须是整数！");
-            return true;
+            return false;
         }
 
         Player target = Bukkit.getPlayer(playerName);
         if (target == null) {
             sender.sendMessage("§c玩家 " + playerName + " 不存在或不在线！");
-            return true;
+            return false;
         }
-        UUID uuid = target.getUniqueId();
 
-        coinManager.addCoins(uuid, amount);
-        sender.sendMessage("§a已为玩家 " + playerName + " 增加 " + amount + " sunk币");
-        target.sendMessage("§e你获得了 " + amount + " sunk币");
+        UUID uuid = target.getUniqueId();
+        coinManager.removeCoins(uuid, amount);
+        sender.sendMessage("§a已为玩家 " + playerName + " 减少 " + amount + " sunk币");
+        target.sendMessage("§e你失去了 " + amount + " sunk币");
         return true;
     }
 }

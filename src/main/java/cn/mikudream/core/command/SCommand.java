@@ -5,7 +5,7 @@ import cn.mikudream.core.command.impl.*;
 import cn.mikudream.core.feature.breakboard.BreakBoardManager;
 import cn.mikudream.core.feature.breakboard.BreakListener;
 import cn.mikudream.core.feature.scoin.SCoinManager;
-import org.bukkit.Bukkit;
+import org.bukkit.Server;
 
 public class SCommand {
     private final MikuDream plugin = MikuDream.getInstance();
@@ -19,9 +19,11 @@ public class SCommand {
             plugin.getCommand("skill").setExecutor(new SKill());
             plugin.getCommand("sconfig").setExecutor(new SConfigCommand(plugin));
             plugin.getCommand("hub").setExecutor(new Hub(plugin));
+            plugin.getCommand("sv").setExecutor(new SVCommand());
+            plugin.getCommand("srf").setExecutor(new SRFCommand(plugin, sCoinManager));
         } catch (Exception e) {
-            Bukkit bukkit;
-            Bukkit.getLogger().severe("注册命令时出现错误: " + e.getMessage());
+            Server server = plugin.getServer();
+            server.getLogger().severe("注册命令时出现错误: " + e.getMessage());
         }
     }
 }

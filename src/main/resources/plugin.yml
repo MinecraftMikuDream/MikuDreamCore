@@ -1,5 +1,5 @@
 name: MikuDreamCore
-version: '1.1.025'
+version: '1.2.007'
 main: cn.mikudream.core.MikuDream
 api-version: '1.21'
 authors: [onea]
@@ -19,6 +19,13 @@ commands:
   scoin:
     description: 查看scoin
     usage: /scoin
+  sv:
+    description: sv
+    usage: /sv
+  srf:
+    description: srf
+    usage: /srf
+
 
 permissions:
   sunk.config:
@@ -39,3 +46,12 @@ permissions:
   scoin.version:
     description: 使用version子命令
     default: true
+  sunk.sv:
+    description: sv
+    default: op
+  scoin.reload:
+    description: 使用reload子命令
+    default: op
+  scoin.remove:
+    description: 使用remove子命令
+    default: op

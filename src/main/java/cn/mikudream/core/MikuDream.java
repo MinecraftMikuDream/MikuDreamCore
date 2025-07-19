@@ -1,9 +1,11 @@
 package cn.mikudream.core;
 
 import cn.mikudream.core.command.SCommand;
+import cn.mikudream.core.command.impl.SVCommand;
 import cn.mikudream.core.feature.scoin.SCoinManager;
 import cn.mikudream.core.feature.scoin.SCoinTabCompleter;
 import cn.mikudream.core.feature.scoin.command.SCoinCommandExecutor;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -11,7 +13,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.UUID;
 
 public class MikuDream extends JavaPlugin implements Listener {
     public static boolean skill_Enabled = true;
@@ -79,4 +85,14 @@ public class MikuDream extends JavaPlugin implements Listener {
         getLogger().info("skill 功能设置为: " + skill_Enabled);
     }
 
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player newPlayer = event.getPlayer();
+        for (UUID uuid : SVCommand.invisiblePlayers) {
+            Player invisiblePlayer = Bukkit.getPlayer(uuid);
+            if (invisiblePlayer != null && !invisiblePlayer.equals(newPlayer)) {
+                newPlayer.hidePlayer(this, invisiblePlayer);
+            }
+        }
+    }
 }
