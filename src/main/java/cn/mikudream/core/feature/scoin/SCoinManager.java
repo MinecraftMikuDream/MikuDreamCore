@@ -63,8 +63,13 @@ public class SCoinManager {
     public void removeCoins(UUID uuid, int amount) {
         loadData();
         int current = getCoins(uuid);
-        setCoins(uuid, Math.max(0, current - amount));
-        saveData();
+        if (getCoins(uuid) > 0) {
+            setCoins(uuid, Math.max(0, current - amount));
+            saveData();
+        }
+        else if(getCoins(uuid) == 0){
+            plugin.getLogger().severe("移除硬币失败: 对方sunkcoin为0");
+        }
     }
 
     public void reload() {
