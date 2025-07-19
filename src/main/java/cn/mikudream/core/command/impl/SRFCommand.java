@@ -2,7 +2,10 @@ package cn.mikudream.core.command.impl;
 
 import cn.mikudream.core.MikuDream;
 import cn.mikudream.core.feature.scoin.SCoinManager;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,7 +19,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.checkerframework.checker.units.qual.C;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -110,13 +112,13 @@ public class SRFCommand implements CommandExecutor, Listener {
         }
 
         // 创建奖品
-        lotteryGui.setItem(10, createGuiItem(Material.NETHERITE_BLOCK, Color.BLACK + "硬币666"));
-        lotteryGui.setItem(11, createGuiItem(Material.DIAMOND_BLOCK, Color.AQUA + "硬币100"));
-        lotteryGui.setItem(12, createGuiItem(Material.END_CRYSTAL, Color.GREEN + "再抽一次"));
-        lotteryGui.setItem(13, createGuiItem(Material.TNT, Color.RED + "噩耗"));
-        lotteryGui.setItem(14, createGuiItem(Material.DIAMOND_ORE, Color.BLUE + "矿物抽奖券"));
-        lotteryGui.setItem(15, createGuiItem(Material.IRON_SWORD, Color.PURPLE + "装备抽奖券"));
-        lotteryGui.setItem(16, createGuiItem(Material.GOLD_BLOCK, Color.YELLOW + "方块抽奖券"));
+        lotteryGui.setItem(10, createGuiItem(Material.NETHERITE_BLOCK, ChatColor.GOLD + "硬币666"));
+        lotteryGui.setItem(11, createGuiItem(Material.DIAMOND_BLOCK, ChatColor.AQUA + "硬币100"));
+        lotteryGui.setItem(12, createGuiItem(Material.END_CRYSTAL, ChatColor.GREEN + "再抽一次"));
+        lotteryGui.setItem(13, createGuiItem(Material.TNT, ChatColor.RED + "噩耗"));
+        lotteryGui.setItem(14, createGuiItem(Material.DIAMOND_ORE, ChatColor.BLUE + "矿物抽奖券"));
+        lotteryGui.setItem(15, createGuiItem(Material.IRON_SWORD, ChatColor.LIGHT_PURPLE + "装备抽奖券"));
+        lotteryGui.setItem(16, createGuiItem(Material.GOLD_BLOCK, ChatColor.GOLD + "方块抽奖券"));
 
         player.openInventory(lotteryGui);
 
@@ -124,42 +126,42 @@ public class SRFCommand implements CommandExecutor, Listener {
             if (!player.isOnline()) return; // 确保玩家在线
 
             int randomValue = random.nextInt(100);
-            if (randomValue < 5) { // 5% 获得666硬币
+            if (randomValue < 1) { // 1% 获得666硬币
                 player.closeInventory();
                 coinManager.addCoins(player.getUniqueId(), 666);
                 player.sendMessage(ChatColor.GOLD + "恭喜获得666硬币!");
             }
-            else if (randomValue < 20) { // 15% 获得100硬币
+            else if (randomValue < 16) { // 15% 获得100硬币
                 player.closeInventory();
                 coinManager.addCoins(player.getUniqueId(), 100);
                 player.sendMessage(ChatColor.AQUA + "恭喜获得100硬币!");
             }
-            else if (randomValue < 30) { // 10% 抽到再抽一次
+            else if (randomValue < 26) { // 10% 抽到再抽一次
                 player.closeInventory();
                 player.sendMessage(ChatColor.GREEN + "恭喜获得再抽一次!");
                 handleNormalLottery(player);
             }
-            else if (randomValue < 40) { // 10% 获得矿物抽奖券
+            else if (randomValue < 36) { // 10% 获得矿物抽奖券
                 player.closeInventory();
                 player.sendMessage(ChatColor.BLUE + "恭喜获得矿物抽奖券!");
                 handleMineralLottery(player);
             }
-            else if (randomValue < 50) { // 10% 获得装备抽奖券
+            else if (randomValue < 46) { // 10% 获得装备抽奖券
                 player.closeInventory();
                 player.sendMessage(ChatColor.LIGHT_PURPLE + "恭喜获得装备抽奖券!");
                 handleEquipmentLottery(player);
             }
-            else if (randomValue < 51) { // 1% 获得方块抽奖券
+            else if (randomValue < 56) { // 10% 获得方块抽奖券
                 player.closeInventory();
                 player.sendMessage(ChatColor.BLUE + "恭喜获得方块抽奖券!");
                 handleBlockLottery(player);
             }
-            else if (randomValue < 81) { // 30% 抽到TNT，触发惩罚抽奖
+            else if (randomValue < 66) { // 30% 抽到TNT，触发惩罚抽奖
                 player.closeInventory();
                 player.sendMessage(ChatColor.RED + "噢不! 你抽中了噩耗!");
                 handlePunishmentLottery(player); // 立即开始惩罚抽奖
             }
-            else { // 19% 未中奖
+            else { // 34% 未中奖
                 player.closeInventory();
                 player.sendMessage(ChatColor.RED + "很遗憾您没有中奖喵!");
             }
