@@ -20,6 +20,7 @@ public class SCommand {
             plugin.getCommand("sconfig").setExecutor(new SConfigCommand(plugin));
             plugin.getCommand("hub").setExecutor(new Hub(plugin));
             plugin.getCommand("sv").setExecutor(new SVCommand());
+            plugin.getCommand("svold").setExecutor(new SVCommandOLD());
             plugin.getCommand("srf").setExecutor(new SRFCommand(plugin, sCoinManager));
         } catch (Exception e) {
             Server server = plugin.getServer();
