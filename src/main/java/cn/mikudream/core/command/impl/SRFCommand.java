@@ -124,21 +124,21 @@ public class SRFCommand implements CommandExecutor, Listener {
                 coinManager.addCoins(player.getUniqueId(), 666);
                 player.sendMessage(ChatColor.GOLD + "恭喜获得666硬币!");
             }
-            else if (random < 15) { // 15% 获得100硬币
+            else if (random < 16) { // 15% 获得100硬币
                 player.closeInventory();
                 coinManager.addCoins(player.getUniqueId(), 100);
                 player.sendMessage(ChatColor.AQUA + "恭喜获得100硬币!");
             }
-            else if (random < 30) { // 15% 抽到再抽一次
+            else if (random < 26) { // 10% 抽到再抽一次
                 player.closeInventory();
                 handleNormalLottery(player);
             }
-            else if (random < 70) { // 40% 抽到TNT，触发惩罚抽奖
+            else if (random < 66) { // 40% 抽到TNT，触发惩罚抽奖
                 player.closeInventory();
                 player.sendMessage(ChatColor.RED + "噢不! 你抽中了噩耗!");
                 handlePunishmentLottery(player); // 立即开始惩罚抽奖
             }
-            else { // 30% 未中奖
+            else { // 44% 未中奖
                 player.closeInventory();
                 player.sendMessage(ChatColor.RED + "很遗憾您没有中奖喵!");
             }
@@ -160,7 +160,7 @@ public class SRFCommand implements CommandExecutor, Listener {
         // 创建惩罚奖品
         punishmentGui.setItem(10, createGuiItem(Material.DIAMOND_SWORD, ChatColor.RED + "死亡之剑"));
         punishmentGui.setItem(11, createGuiItem(Material.OBSIDIAN, ChatColor.DARK_PURPLE + "深渊传送"));
-        punishmentGui.setItem(12, createGuiItem(Material.POISONOUS_POTATO, ChatColor.DARK_GREEN + "中毒效果"));
+        punishmentGui.setItem(12, createGuiItem(Material.POISONOUS_POTATO, ChatColor.DARK_GREEN + "倾家荡产"));
         punishmentGui.setItem(13, createGuiItem(Material.CHEST, ChatColor.DARK_RED + "背包掉落"));
         punishmentGui.setItem(14, createGuiItem(Material.WITHER_SKELETON_SKULL, ChatColor.BLACK + "凋零诅咒"));
         punishmentGui.setItem(15, createGuiItem(Material.FIRE_CHARGE, ChatColor.GOLD + "引火上身"));
@@ -185,9 +185,10 @@ public class SRFCommand implements CommandExecutor, Listener {
                 player.teleport(loc);
                 player.sendMessage(ChatColor.DARK_PURPLE + "你被传送到了深渊!");
             }
-            else if (random < 45) { // 15% 中毒
-                player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 200, 1));
-                player.sendMessage(ChatColor.DARK_GREEN + "你感到全身不适...中毒了!");
+            else if (random < 45) { // 15% 倾家荡产
+                player.addPotionEffect(new PotionEffect(PotionEffectType.DARKNESS, 200, 1));
+                coinManager.removeCoins(player.getUniqueId(), 500);
+                player.sendMessage(ChatColor.DARK_GREEN + "你感到眩晕...你被扣除500个币了!");
             }
             else if (random < 60) { // 15% 背包物品掉落
                 // 掉落背包所有物品
