@@ -25,6 +25,8 @@ commands:
     description: svold
   shop:
     description: shop
+  friend:
+    description: friend
 
 
 permissions:
