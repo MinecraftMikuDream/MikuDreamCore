@@ -6,6 +6,7 @@ import java.util.*;
 public class MineralPricingSystem {
     private static final Map<Material, Integer> SELL_PRICES = new EnumMap<>(Material.class);
     private static final Map<Material, Integer> BUY_PRICES = new EnumMap<>(Material.class);
+    public static double val = 0.00;
 
     static {
         // Initialize prices
@@ -19,7 +20,7 @@ public class MineralPricingSystem {
         SELL_PRICES.put(Material.LAPIS_LAZULI, 8);
         SELL_PRICES.put(Material.REDSTONE, 7);
         SELL_PRICES.put(Material.QUARTZ, 10);
-        SELL_PRICES.put(Material.ANCIENT_DEBRIS, 450);
+        SELL_PRICES.put(Material.ANCIENT_DEBRIS, 128);
         SELL_PRICES.put(Material.DIAMOND_ORE, 100);
         SELL_PRICES.put(Material.EMERALD_ORE, 80);
         SELL_PRICES.put(Material.GOLD_ORE, 30);
@@ -72,8 +73,10 @@ public class MineralPricingSystem {
             int buyPrice = BUY_PRICES.get(material);
 
             sb.append(String.format("§e%s:\n", getDisplayName(material)));
-            sb.append(String.format("  §a卖出价: §f%d 硬币\n", sellPrice));
-            sb.append(String.format("  §c买入价: §f%d 硬币\n", buyPrice));
+            sb.append(String.format("  §a卖出价: §f%d coin\n", sellPrice));
+            sb.append(String.format("  §f手续费: §f%d%%\n", (int)(val * 100)));
+            sb.append(String.format("  §a实际价: §f%d coin\n", Math.round(sellPrice - sellPrice*val)));
+            sb.append(String.format("  §f买入价: §f%d coin\n", buyPrice));
         }
 
         return sb.toString();
@@ -83,9 +86,13 @@ public class MineralPricingSystem {
         return switch (material) {
             case NETHERITE_INGOT -> "下界合金锭";
             case DIAMOND -> "钻石";
+            case DIAMOND_BLOCK -> "钻石块";
             case EMERALD -> "绿宝石";
+            case EMERALD_BLOCK -> "绿宝石块";
             case GOLD_INGOT -> "金锭";
+            case GOLD_BLOCK -> "金块";
             case IRON_INGOT -> "铁锭";
+            case IRON_BLOCK -> "铁块";
             case COPPER_INGOT -> "铜锭";
             case COAL -> "煤炭";
             case LAPIS_LAZULI -> "青金石";
@@ -101,6 +108,12 @@ public class MineralPricingSystem {
             case LAPIS_ORE -> "青金石矿石";
             case REDSTONE_ORE -> "红石矿石";
             case NETHER_QUARTZ_ORE -> "下界石英矿石";
+            case COAL_BLOCK -> "煤炭块";
+            case LAPIS_BLOCK -> "青金石块";
+            case REDSTONE_BLOCK -> "红石块";
+            case QUARTZ_BLOCK -> "下界石英块";
+            case NETHERITE_BLOCK -> "下界合金块";
+            case COPPER_BLOCK -> "铜块";
             default -> material.name();
         };
     }

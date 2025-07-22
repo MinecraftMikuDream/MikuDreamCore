@@ -59,6 +59,16 @@ public class FriendTabCompleter implements TabCompleter {
                                 .forEach(completions::add);
                     }
                     break;
+                case "list":
+                    friendSystem.getFriends(player.getUniqueId()).stream()
+                            .map(Friend::getFriendName)
+                            .forEach(completions::add);
+                    break;
+                case "deny", "tp":
+                    friendSystem.getPendingRequests(player.getUniqueId()).stream()
+                            .map(uuid -> Bukkit.getOfflinePlayer(uuid).getName())
+                            .forEach(completions::add);
+                    break;
             }
         }
 

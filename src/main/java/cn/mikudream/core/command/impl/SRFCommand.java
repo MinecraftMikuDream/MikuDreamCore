@@ -30,7 +30,7 @@ import java.util.UUID;
 public class SRFCommand implements CommandExecutor, Listener {
     private final MikuDream plugin;
     private final CoinsManager coinManager;
-    private final int lotteryCost = 499;
+    private final int lotteryCost = 288;
     SecureRandom secureRandom = new SecureRandom();
 
     // GUI标题常量

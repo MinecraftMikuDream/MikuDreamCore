@@ -11,6 +11,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import static cn.mikudream.core.feature.shop.MineralPricingSystem.val;
+
 @ShopCommandInfo(
         name = "sell",
         purpose = "Sell items from your hand",
@@ -61,12 +63,13 @@ public class CommandSellShop extends ShopSubCommand {
 
         // Add coins
         CoinsManager coinsManager = new CoinsManager(MikuDream.getInstance());
-        coinsManager.addCoins(player.getUniqueId(), Math.round(totalPrice - totalPrice*0.20));
+        coinsManager.addCoins(player.getUniqueId(), Math.round(totalPrice - totalPrice*val));
 
-        sender.sendMessage(String.format("§a成功出售 %d 个 %s，获得 %d 硬币, 手续费 20%%",
+        sender.sendMessage(String.format("§a成功出售 %d 个 %s，获得 %d 硬币, 手续费 %d%%",
                 amount,
                 MineralPricingSystem.getDisplayName(material),
-                Math.round(totalPrice - totalPrice*0.20)));
+                Math.round(totalPrice - totalPrice*val),
+                (int)(val * 100)));
 
         return true;
     }
