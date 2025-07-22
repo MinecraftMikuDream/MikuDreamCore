@@ -2,6 +2,7 @@ package cn.mikudream.core.command.impl;
 
 import cn.mikudream.core.MikuDream;
 import cn.mikudream.core.feature.coin.CoinsManager;
+import com.google.common.hash.Hashing;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -21,6 +22,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.UUID;
@@ -29,7 +31,7 @@ public class SRFCommand implements CommandExecutor, Listener {
     private final MikuDream plugin;
     private final CoinsManager coinManager;
     private final int lotteryCost = 50;
-    private final Random random = new Random();
+    SecureRandom secureRandom = new SecureRandom();
 
     // GUI标题常量
     private static final String NORMAL_LOTTERY_TITLE = ChatColor.GOLD + "普通抽奖";
@@ -125,38 +127,39 @@ public class SRFCommand implements CommandExecutor, Listener {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (!player.isOnline()) return; // 确保玩家在线
 
-            int randomValue = random.nextInt(100);
-            if (randomValue < 1) { // 1% 获得666硬币
+
+            double randomValue = secureRandom.nextDouble() * 100;
+            if (randomValue < 1.0) { // 1% 获得666硬币
                 player.closeInventory();
                 coinManager.addCoins(player.getUniqueId(), 666);
                 player.sendMessage(ChatColor.GOLD + "恭喜获得666硬币!");
             }
-            else if (randomValue < 16) { // 15% 获得100硬币
+            else if (randomValue < 16.0) { // 15% 获得100硬币
                 player.closeInventory();
                 coinManager.addCoins(player.getUniqueId(), 100);
                 player.sendMessage(ChatColor.AQUA + "恭喜获得100硬币!");
             }
-            else if (randomValue < 26) { // 10% 抽到再抽一次
+            else if (randomValue < 26.0) { // 10% 抽到再抽一次
                 player.closeInventory();
                 player.sendMessage(ChatColor.GREEN + "恭喜获得再抽一次!");
                 handleNormalLottery(player);
             }
-            else if (randomValue < 36) { // 10% 获得矿物抽奖券
+            else if (randomValue < 36.0) { // 10% 获得矿物抽奖券
                 player.closeInventory();
                 player.sendMessage(ChatColor.BLUE + "恭喜获得矿物抽奖券!");
                 handleMineralLottery(player);
             }
-            else if (randomValue < 46) { // 10% 获得装备抽奖券
+            else if (randomValue < 46.0) { // 10% 获得装备抽奖券
                 player.closeInventory();
                 player.sendMessage(ChatColor.LIGHT_PURPLE + "恭喜获得装备抽奖券!");
                 handleEquipmentLottery(player);
             }
-            else if (randomValue < 56) { // 10% 获得方块抽奖券
+            else if (randomValue < 56.0) { // 10% 获得方块抽奖券
                 player.closeInventory();
                 player.sendMessage(ChatColor.BLUE + "恭喜获得方块抽奖券!");
                 handleBlockLottery(player);
             }
-            else if (randomValue < 66) { // 30% 抽到TNT，触发惩罚抽奖
+            else if (randomValue < 66.0) { // 30% 抽到TNT，触发惩罚抽奖
                 player.closeInventory();
                 player.sendMessage(ChatColor.RED + "噢不! 你抽中了噩耗!");
                 handlePunishmentLottery(player); // 立即开始惩罚抽奖
@@ -192,35 +195,32 @@ public class SRFCommand implements CommandExecutor, Listener {
             if (!player.isOnline()) return;
 
             player.closeInventory();
-            int randomValue = random.nextInt(100);
-
+            double randomValue = secureRandom.nextDouble() * 100;
             Material mineralType;
             int amount;
-
-            if (randomValue < 20) { // 20%
+            if (randomValue < 20.0) {
                 mineralType = Material.COAL_BLOCK;
-                amount = 3 + random.nextInt(6);
-            } else if (randomValue < 40) { // 20%
+                amount = 3 + secureRandom.nextInt(6);
+            } else if (randomValue < 40.0) {
                 mineralType = Material.IRON_BLOCK;
-                amount = 2 + random.nextInt(4);
-            } else if (randomValue < 60) { // 20%
+                amount = 2 + secureRandom.nextInt(4);
+            } else if (randomValue < 60.0) {
                 mineralType = Material.GOLD_BLOCK;
-                amount = 1 + random.nextInt(4);
-            } else if (randomValue < 75) { // 15%
+                amount = 1 + secureRandom.nextInt(4);
+            } else if (randomValue < 75.0) {
                 mineralType = Material.DIAMOND_BLOCK;
-                amount = 1 + random.nextInt(3);
-            } else if (randomValue < 85) { // 10%
+                amount = 1 + secureRandom.nextInt(3);
+            } else if (randomValue < 85.0) {
                 mineralType = Material.EMERALD_BLOCK;
-                amount = 1 + random.nextInt(2);
-            } else if (randomValue < 95) { // 10%
+                amount = 1 + secureRandom.nextInt(2);
+            } else if (randomValue < 95.0) {
                 mineralType = Material.NETHERITE_BLOCK;
-                amount = 3 + random.nextInt(6);
-            } else { // 5%
+                amount = 3 + secureRandom.nextInt(6);
+            } else {
                 mineralType = Material.REDSTONE_BLOCK;
-                amount = 1 + random.nextInt(2);
+                amount = 1 + secureRandom.nextInt(2);
             }
 
-            // 给予玩家矿物
             ItemStack mineralReward = new ItemStack(mineralType, amount);
             player.getInventory().addItem(mineralReward);
             player.sendMessage(ChatColor.BLUE + "恭喜获得 " + amount + " 个 " + mineralType.name() + "!");
@@ -231,14 +231,12 @@ public class SRFCommand implements CommandExecutor, Listener {
         Inventory mineralGui = Bukkit.createInventory(player, 27, MINERAL_LOTTERY_TITLE);
         ItemStack border = createGuiItem(Material.BLUE_STAINED_GLASS_PANE, " ");
 
-        // 填充边界
         for (int i = 0; i < 27; i++) {
             if (i < 9 || i > 17 || i % 9 == 0 || i % 9 == 8) {
                 mineralGui.setItem(i, border);
             }
         }
 
-        // 创建矿物奖品
         mineralGui.setItem(10, createGuiItem(Material.COAL_ORE, ChatColor.BLACK + "煤矿石"));
         mineralGui.setItem(11, createGuiItem(Material.IRON_ORE, ChatColor.GRAY + "铁矿石"));
         mineralGui.setItem(12, createGuiItem(Material.GOLD_ORE, ChatColor.GOLD + "金矿石"));
@@ -249,41 +247,38 @@ public class SRFCommand implements CommandExecutor, Listener {
 
         player.openInventory(mineralGui);
 
-        // 3秒后显示矿物结果
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (!player.isOnline()) return;
 
             player.closeInventory();
-            int randomValue = random.nextInt(100);
+            double randomValue = secureRandom.nextDouble() * 100;
 
-            // 随机矿物类型和数量
             Material mineralType;
             int amount;
 
-            if (randomValue < 20) { // 20% 煤矿石 (3-8个)
+            if (randomValue < 20.0) {
                 mineralType = Material.COAL;
-                amount = 3 + random.nextInt(6);
-            } else if (randomValue < 40) { // 20% 铁矿石 (2-5个)
+                amount = 3 + secureRandom.nextInt(6);
+            } else if (randomValue < 40.0) {
                 mineralType = Material.IRON_INGOT;
-                amount = 2 + random.nextInt(4);
-            } else if (randomValue < 60) { // 20% 金矿石 (1-4个)
+                amount = 2 + secureRandom.nextInt(4);
+            } else if (randomValue < 60.0) {
                 mineralType = Material.GOLD_INGOT;
-                amount = 1 + random.nextInt(4);
-            } else if (randomValue < 75) { // 15% 钻石 (1-3个)
+                amount = 1 + secureRandom.nextInt(4);
+            } else if (randomValue < 75.0) {
                 mineralType = Material.DIAMOND;
-                amount = 1 + random.nextInt(3);
-            } else if (randomValue < 85) { // 10% 绿宝石 (1-2个)
+                amount = 1 + secureRandom.nextInt(3);
+            } else if (randomValue < 85.0) {
                 mineralType = Material.EMERALD;
-                amount = 1 + random.nextInt(2);
-            } else if (randomValue < 95) { // 10% 下界石英 (3-8个)
+                amount = 1 + secureRandom.nextInt(2);
+            } else if (randomValue < 95.0) {
                 mineralType = Material.QUARTZ;
-                amount = 3 + random.nextInt(6);
-            } else { // 5% 远古残骸 (1-2个)
+                amount = 3 + secureRandom.nextInt(6);
+            } else {
                 mineralType = Material.ANCIENT_DEBRIS;
-                amount = 1 + random.nextInt(2);
+                amount = 1 + secureRandom.nextInt(2);
             }
 
-            // 给予玩家矿物
             ItemStack mineralReward = new ItemStack(mineralType, amount);
             player.getInventory().addItem(mineralReward);
             player.sendMessage(ChatColor.BLUE + "恭喜获得 " + amount + " 个 " + mineralType.name() + "!");
@@ -317,22 +312,22 @@ public class SRFCommand implements CommandExecutor, Listener {
             if (!player.isOnline()) return;
 
             player.closeInventory();
-            int randomValue = random.nextInt(100);
+            double randomValue = secureRandom.nextDouble() * 100;
 
             // 随机装备
             ItemStack equipmentReward;
 
-            if (randomValue < 25) { // 25% 铁剑
+            if (randomValue < 25.0) { // 25% 铁剑
                 equipmentReward = new ItemStack(Material.IRON_SWORD);
-            } else if (randomValue < 45) { // 20% 钻石剑
+            } else if (randomValue < 45.0) { // 20% 钻石剑
                 equipmentReward = new ItemStack(Material.DIAMOND_SWORD);
-            } else if (randomValue < 60) { // 15% 铁胸甲
+            } else if (randomValue < 60.0) { // 15% 铁胸甲
                 equipmentReward = new ItemStack(Material.IRON_CHESTPLATE);
-            } else if (randomValue < 75) { // 15% 钻石胸甲
+            } else if (randomValue < 75.0) { // 15% 钻石胸甲
                 equipmentReward = new ItemStack(Material.DIAMOND_CHESTPLATE);
-            } else if (randomValue < 85) { // 10% 弓
+            } else if (randomValue < 90.0) { // 10% 弓
                 equipmentReward = new ItemStack(Material.BOW);
-            } else if (randomValue < 95) { // 10% 弩
+            } else if (randomValue < 95.0) { // 5% 弩
                 equipmentReward = new ItemStack(Material.CROSSBOW);
             } else { // 5% 鞘翅
                 equipmentReward = new ItemStack(Material.ELYTRA);
@@ -371,24 +366,24 @@ public class SRFCommand implements CommandExecutor, Listener {
             if (!player.isOnline()) return; // 确保玩家在线
 
             player.closeInventory();
-            int randomValue = random.nextInt(100);
+            double randomValue = secureRandom.nextDouble() * 100;
 
-            if (randomValue < 15) { // 15% 死亡
+            if (randomValue < 15.0) { // 15% 死亡
                 player.setHealth(0);
                 player.sendMessage(ChatColor.DARK_RED + "死亡之剑刺穿了你!");
             }
-            else if (randomValue < 30) { // 15% 传送至深渊
+            else if (randomValue < 30.0) { // 15% 传送至深渊
                 Location loc = player.getLocation().clone();
                 loc.setY(-100);
                 player.teleport(loc);
                 player.sendMessage(ChatColor.DARK_PURPLE + "你被传送到了深渊!");
             }
-            else if (randomValue < 45) { // 15% 倾家荡产
+            else if (randomValue < 45.0) { // 15% 倾家荡产
                 player.addPotionEffect(new PotionEffect(PotionEffectType.DARKNESS, 200, 1));
                 coinManager.removeCoins(player.getUniqueId(), 500);
                 player.sendMessage(ChatColor.DARK_GREEN + "你感到眩晕...你被扣除500个币了!");
             }
-            else if (randomValue < 60) { // 15% 背包物品掉落
+            else if (randomValue < 60.0) { // 15% 背包物品掉落
                 // 掉落背包所有物品
                 for (ItemStack item : player.getInventory().getContents()) {
                     if (item != null && item.getType() != Material.AIR) {
@@ -398,11 +393,11 @@ public class SRFCommand implements CommandExecutor, Listener {
                 player.getInventory().clear();
                 player.sendMessage(ChatColor.DARK_RED + "你的背包物品全部掉出来了!");
             }
-            else if (randomValue < 75) { // 15% 凋零效果
+            else if (randomValue < 75.0) { // 15% 凋零效果
                 player.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 200, 1));
                 player.sendMessage(ChatColor.BLACK + "你被凋零诅咒了!");
             }
-            else if (randomValue < 90) { // 15% 着火
+            else if (randomValue < 90.0) { // 15% 着火
                 player.setFireTicks(200);
                 player.sendMessage(ChatColor.GOLD + "你着火了!");
             }
