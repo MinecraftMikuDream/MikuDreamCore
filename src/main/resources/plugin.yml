@@ -1,5 +1,5 @@
 name: MikuDreamCore
-version: '1.2.200'
+version: '1.2.205'
 main: cn.mikudream.core.MikuDream
 api-version: '1.21'
 authors: [onea]
@@ -87,4 +87,10 @@ permissions:
     default: true
   friend.accept:
     description: 使用accept子命令
+    default: true
+  friend.tp:
+    description: 使用tp子命令
+    default: true
+  friend.deny:
+    description: 使用deny子命令
     default: true

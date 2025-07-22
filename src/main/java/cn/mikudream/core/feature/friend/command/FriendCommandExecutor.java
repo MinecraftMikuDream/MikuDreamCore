@@ -25,6 +25,8 @@ public final class FriendCommandExecutor implements CommandExecutor {
         commands.add(new CommandList(friendSystem));
         commands.add(new CommandRemove(friendSystem));
         commands.add(new CommandAccept(friendSystem));
+        commands.add(new CommandDeny(friendSystem));
+        commands.add(new CommandTp(friendSystem));
         commands.sort(Comparator.comparing(cmd -> cmd.getInfo().name()));
     }
 

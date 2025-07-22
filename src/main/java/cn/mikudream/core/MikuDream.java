@@ -7,7 +7,6 @@ import cn.mikudream.core.feature.coin.command.CoinTabCompleter;
 import cn.mikudream.core.feature.coin.command.CoinCommandExecutor;
 import cn.mikudream.core.feature.friend.FriendSystem;
 import cn.mikudream.core.feature.friend.command.FriendCommandExecutor;
-import cn.mikudream.core.feature.friend.command.FriendCommandInfo;
 import cn.mikudream.core.feature.friend.command.FriendTabCompleter;
 import cn.mikudream.core.feature.shop.command.ShopCommandExecutor;
 import cn.mikudream.core.feature.shop.command.ShopTabCompleter;
@@ -30,7 +29,7 @@ public class MikuDream extends JavaPlugin implements Listener {
     public int lobby_y = getConfig().getInt("lobby.y");
     public int lobby_z = getConfig().getInt("lobby.z");
     public String lobby_world = getConfig().getString("lobby.dimension");
-    private FriendSystem friendSystem;
+    private final FriendSystem friendSystem = new FriendSystem();
 
     public static MikuDream getInstance() {
         return getPlugin(MikuDream.class);
