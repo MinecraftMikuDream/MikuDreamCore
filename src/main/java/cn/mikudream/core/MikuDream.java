@@ -5,6 +5,10 @@ import cn.mikudream.core.command.impl.SVCommand;
 import cn.mikudream.core.feature.coin.CoinsManager;
 import cn.mikudream.core.feature.coin.command.CoinTabCompleter;
 import cn.mikudream.core.feature.coin.command.CoinCommandExecutor;
+import cn.mikudream.core.feature.friend.FriendSystem;
+import cn.mikudream.core.feature.friend.command.FriendCommandExecutor;
+import cn.mikudream.core.feature.friend.command.FriendCommandInfo;
+import cn.mikudream.core.feature.friend.command.FriendTabCompleter;
 import cn.mikudream.core.feature.shop.command.ShopCommandExecutor;
 import cn.mikudream.core.feature.shop.command.ShopTabCompleter;
 import org.bukkit.Bukkit;
@@ -26,6 +30,7 @@ public class MikuDream extends JavaPlugin implements Listener {
     public int lobby_y = getConfig().getInt("lobby.y");
     public int lobby_z = getConfig().getInt("lobby.z");
     public String lobby_world = getConfig().getString("lobby.dimension");
+    private FriendSystem friendSystem;
 
     public static MikuDream getInstance() {
         return getPlugin(MikuDream.class);
@@ -48,12 +53,19 @@ public class MikuDream extends JavaPlugin implements Listener {
         ShopCommandExecutor shopCommandExecutor = new ShopCommandExecutor();
         PluginCommand shopCommand = this.getCommand("shop");
 
-        if (scoinCommand != null && shopCommand != null) {
+        FriendCommandExecutor friendCommandExecutor = new FriendCommandExecutor(friendSystem);
+        PluginCommand friendCommand = this.getCommand("friend");
+
+        if (scoinCommand != null && shopCommand != null && friendCommand != null) {
             scoinCommand.setExecutor(command);
             scoinCommand.setTabCompleter(new CoinTabCompleter());
 
             shopCommand.setExecutor(shopCommandExecutor);
             shopCommand.setTabCompleter(new ShopTabCompleter());
+
+            friendCommand.setExecutor(friendCommandExecutor);
+            friendCommand.setTabCompleter(new FriendTabCompleter(friendSystem));
+
         } else {
             getLogger().severe("无法注册 coin,shop 命令，请检查 plugin.yml 配置");
         }
