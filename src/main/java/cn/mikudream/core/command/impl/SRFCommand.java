@@ -2,7 +2,6 @@ package cn.mikudream.core.command.impl;
 
 import cn.mikudream.core.MikuDream;
 import cn.mikudream.core.feature.coin.CoinsManager;
-import com.google.common.hash.Hashing;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -24,7 +23,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Random;
 import java.util.UUID;
 
 public class SRFCommand implements CommandExecutor, Listener {
