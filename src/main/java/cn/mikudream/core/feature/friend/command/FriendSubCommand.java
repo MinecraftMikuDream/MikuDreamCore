@@ -1,11 +1,11 @@
-package cn.mikudream.core.feature.coin.command;
+package cn.mikudream.core.feature.friend.command;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class CoinSubCommand implements Comparable<CoinSubCommand> {
+public abstract class FriendSubCommand implements Comparable<FriendSubCommand> {
 
     protected abstract boolean execute(CommandSender sender, Command command, String label, String[] args);
 
@@ -21,15 +21,15 @@ public abstract class CoinSubCommand implements Comparable<CoinSubCommand> {
         sender.sendMessage(message);
     }
 
-    public CoinCommandInfo getInfo() {
-        CoinCommandInfo info = this.getClass().getAnnotation(CoinCommandInfo.class);
+    public FriendCommandInfo getInfo() {
+        FriendCommandInfo info = this.getClass().getAnnotation(FriendCommandInfo.class);
         if (info == null) {
             System.err.println("FriendCommandInfo annotation missing on " + this.getClass().getSimpleName());
         }
         return info;
     }
 
-    public int compareTo(@NotNull CoinSubCommand other) {
+    public int compareTo(@NotNull FriendSubCommand other) {
         return 0;
     }
 

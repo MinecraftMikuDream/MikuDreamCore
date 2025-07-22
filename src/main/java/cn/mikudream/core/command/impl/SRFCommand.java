@@ -30,7 +30,7 @@ import java.util.UUID;
 public class SRFCommand implements CommandExecutor, Listener {
     private final MikuDream plugin;
     private final CoinsManager coinManager;
-    private final int lotteryCost = 50;
+    private final int lotteryCost = 499;
     SecureRandom secureRandom = new SecureRandom();
 
     // GUI标题常量
@@ -215,7 +215,7 @@ public class SRFCommand implements CommandExecutor, Listener {
                 amount = 1 + secureRandom.nextInt(2);
             } else if (randomValue < 95.0) {
                 mineralType = Material.NETHERITE_BLOCK;
-                amount = 3 + secureRandom.nextInt(6);
+                amount = 1;
             } else {
                 mineralType = Material.REDSTONE_BLOCK;
                 amount = 1 + secureRandom.nextInt(2);
@@ -257,22 +257,22 @@ public class SRFCommand implements CommandExecutor, Listener {
             int amount;
 
             if (randomValue < 20.0) {
-                mineralType = Material.COAL;
+                mineralType = Material.COAL_ORE;
                 amount = 3 + secureRandom.nextInt(6);
             } else if (randomValue < 40.0) {
-                mineralType = Material.IRON_INGOT;
+                mineralType = Material.IRON_ORE;
                 amount = 2 + secureRandom.nextInt(4);
             } else if (randomValue < 60.0) {
-                mineralType = Material.GOLD_INGOT;
+                mineralType = Material.GOLD_ORE;
                 amount = 1 + secureRandom.nextInt(4);
             } else if (randomValue < 75.0) {
-                mineralType = Material.DIAMOND;
+                mineralType = Material.DIAMOND_ORE;
                 amount = 1 + secureRandom.nextInt(3);
             } else if (randomValue < 85.0) {
-                mineralType = Material.EMERALD;
+                mineralType = Material.EMERALD_ORE;
                 amount = 1 + secureRandom.nextInt(2);
             } else if (randomValue < 95.0) {
-                mineralType = Material.QUARTZ;
+                mineralType = Material.NETHER_QUARTZ_ORE;
                 amount = 3 + secureRandom.nextInt(6);
             } else {
                 mineralType = Material.ANCIENT_DEBRIS;

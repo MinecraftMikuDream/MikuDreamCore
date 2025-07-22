@@ -9,7 +9,7 @@ public class MineralPricingSystem {
 
     static {
         // Initialize prices
-        SELL_PRICES.put(Material.NETHERITE_INGOT, 499);
+        SELL_PRICES.put(Material.NETHERITE_INGOT, 288);
         SELL_PRICES.put(Material.DIAMOND, 125);
         SELL_PRICES.put(Material.EMERALD, 100);
         SELL_PRICES.put(Material.GOLD_INGOT, 40);
@@ -29,11 +29,21 @@ public class MineralPricingSystem {
         SELL_PRICES.put(Material.LAPIS_ORE, 6);
         SELL_PRICES.put(Material.REDSTONE_ORE, 5);
         SELL_PRICES.put(Material.NETHER_QUARTZ_ORE, 8);
+        SELL_PRICES.put(Material.COAL_BLOCK,20);
+        SELL_PRICES.put(Material.LAPIS_BLOCK,32);
+        SELL_PRICES.put(Material.REDSTONE_BLOCK,28);
+        SELL_PRICES.put(Material.QUARTZ_BLOCK,40);
+        SELL_PRICES.put(Material.NETHERITE_BLOCK,648);
+        SELL_PRICES.put(Material.DIAMOND_BLOCK, 478);
+        SELL_PRICES.put(Material.EMERALD_BLOCK, 320);
+        SELL_PRICES.put(Material.GOLD_BLOCK, 128);
+        SELL_PRICES.put(Material.IRON_BLOCK, 82);
+        SELL_PRICES.put(Material.COPPER_BLOCK, 48);
 
-        // Set buy prices (5% higher than sell)
+        // Set buy prices (7% higher than sell)
         for (Material material : SELL_PRICES.keySet()) {
             int sellPrice = SELL_PRICES.get(material);
-            BUY_PRICES.put(material, (int) Math.round(sellPrice * 1.05));
+            BUY_PRICES.put(material, (int) Math.round(sellPrice * 1.07));
         }
     }
 

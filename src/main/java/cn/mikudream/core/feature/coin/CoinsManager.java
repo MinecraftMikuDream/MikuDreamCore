@@ -43,7 +43,7 @@ public class CoinsManager {
         return coins;
     }
 
-    public void setCoins(UUID uuid, int amount) {
+    public void setCoins(UUID uuid, long amount) {
         loadData();
         String uuidStr = uuid.toString().toLowerCase();
         data.set(uuidStr, amount);
@@ -51,14 +51,14 @@ public class CoinsManager {
         saveData();
     }
 
-    public void addCoins(UUID uuid, int amount) {
+    public void addCoins(UUID uuid, long amount) {
         loadData();
         int current = getCoins(uuid);
         setCoins(uuid, current + amount);
         saveData();
     }
 
-    public void removeCoins(UUID uuid, int amount) {
+    public void removeCoins(UUID uuid, long amount) {
         loadData();
         int current = getCoins(uuid);
         if (getCoins(uuid) > 0) {

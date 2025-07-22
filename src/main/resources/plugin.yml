@@ -1,5 +1,5 @@
 name: MikuDreamCore
-version: '1.2.102'
+version: '1.2.104'
 main: cn.mikudream.core.MikuDream
 api-version: '1.21'
 authors: [onea]
@@ -62,4 +62,27 @@ permissions:
     default: true
   shop.list:
     description: 使用list子命令
+    default: true
+  shop.buy:
+    description: 使用buy子命令
+    default: true
+  shop.sell:
+    description: 使用sell子命令
+    default: true
+
+
+  friend.commands:
+    description: friend
+    default: true
+  friend.list:
+    description: 使用list子命令
+    default: true
+  friend.add:
+    description: 使用add子命令
+    default: true
+  friend.remove:
+    description: 使用remove子命令
+    default: true
+  friend.accept:
+    description: 使用accept子命令
     default: true
