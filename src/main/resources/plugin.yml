@@ -1,5 +1,5 @@
 name: MikuDreamCore
-version: '1.2.205'
+version: '1.2.206'
 main: cn.mikudream.core.MikuDream
 api-version: '1.21'
 authors: [onea]

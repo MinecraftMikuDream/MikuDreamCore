@@ -61,12 +61,12 @@ public class CommandSellShop extends ShopSubCommand {
 
         // Add coins
         CoinsManager coinsManager = new CoinsManager(MikuDream.getInstance());
-        coinsManager.addCoins(player.getUniqueId(), Math.round(totalPrice - totalPrice*0.05));
+        coinsManager.addCoins(player.getUniqueId(), Math.round(totalPrice - totalPrice*0.20));
 
-        sender.sendMessage(String.format("§a成功出售 %d 个 %s，获得 %d 硬币, 手续费 5%%",
+        sender.sendMessage(String.format("§a成功出售 %d 个 %s，获得 %d 硬币, 手续费 20%%",
                 amount,
                 MineralPricingSystem.getDisplayName(material),
-                totalPrice));
+                Math.round(totalPrice - totalPrice*0.20)));
 
         return true;
     }
