@@ -1,7 +1,7 @@
 package cn.mikudream.core.command.impl;
 
 import cn.mikudream.core.MikuDream;
-import cn.mikudream.core.feature.scoin.SCoinManager;
+import cn.mikudream.core.feature.coin.CoinsManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -27,7 +27,7 @@ import java.util.UUID;
 
 public class SRFCommand implements CommandExecutor, Listener {
     private final MikuDream plugin;
-    private final SCoinManager coinManager;
+    private final CoinsManager coinManager;
     private final int lotteryCost = 50;
     private final Random random = new Random();
 
@@ -38,7 +38,7 @@ public class SRFCommand implements CommandExecutor, Listener {
     private static final String EQUIPMENT_LOTTERY_TITLE = ChatColor.DARK_PURPLE + "装备抽奖";
     private static final String BLOCK_LOTTERY_TITLE = ChatColor.DARK_PURPLE + "方块抽奖";
 
-    public SRFCommand(MikuDream plugin, SCoinManager coinManager) {
+    public SRFCommand(MikuDream plugin, CoinsManager coinManager) {
         this.plugin = plugin;
         this.coinManager = coinManager;
 

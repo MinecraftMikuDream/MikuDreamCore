@@ -1,11 +1,11 @@
-package cn.mikudream.core.feature.scoin.command;
+package cn.mikudream.core.feature.shop.command;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class SubCommand implements Comparable<SubCommand> {
+public abstract class ShopSubCommand implements Comparable<ShopSubCommand> {
 
     protected abstract boolean execute(CommandSender sender, Command command, String label, String[] args);
 
@@ -21,15 +21,15 @@ public abstract class SubCommand implements Comparable<SubCommand> {
         sender.sendMessage(message);
     }
 
-    public CommandInfo getInfo() {
-        CommandInfo info = this.getClass().getAnnotation(CommandInfo.class);
+    public ShopCommandInfo getInfo() {
+        ShopCommandInfo info = this.getClass().getAnnotation(ShopCommandInfo.class);
         if (info == null) {
-            System.err.println("CommandInfo annotation missing on " + this.getClass().getSimpleName());
+            System.err.println("ShopCommandInfo annotation missing on " + this.getClass().getSimpleName());
         }
         return info;
     }
 
-    public int compareTo(@NotNull SubCommand other) {
+    public int compareTo(@NotNull ShopSubCommand other) {
         return 0;
     }
 

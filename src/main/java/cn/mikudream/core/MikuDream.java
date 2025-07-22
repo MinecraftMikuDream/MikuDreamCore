@@ -2,9 +2,11 @@ package cn.mikudream.core;
 
 import cn.mikudream.core.command.SCommand;
 import cn.mikudream.core.command.impl.SVCommand;
-import cn.mikudream.core.feature.scoin.SCoinManager;
-import cn.mikudream.core.feature.scoin.SCoinTabCompleter;
-import cn.mikudream.core.feature.scoin.command.SCoinCommandExecutor;
+import cn.mikudream.core.feature.coin.CoinsManager;
+import cn.mikudream.core.feature.coin.command.CoinTabCompleter;
+import cn.mikudream.core.feature.coin.command.CoinCommandExecutor;
+import cn.mikudream.core.feature.shop.command.ShopCommandExecutor;
+import cn.mikudream.core.feature.shop.command.ShopTabCompleter;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
@@ -14,7 +16,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.UUID;
@@ -40,14 +41,21 @@ public class MikuDream extends JavaPlugin implements Listener {
         SCommand scommand = new SCommand();
         scommand.init();
 
-        SCoinManager sCoinManager = new SCoinManager(this);
-        SCoinCommandExecutor command = new SCoinCommandExecutor(sCoinManager);
-        PluginCommand scoinCommand = this.getCommand("scoin");
-        if (scoinCommand != null) {
+        CoinsManager mikuCoinsManager = new CoinsManager(this);
+        CoinCommandExecutor command = new CoinCommandExecutor(mikuCoinsManager);
+        PluginCommand scoinCommand = this.getCommand("coin");
+
+        ShopCommandExecutor shopCommandExecutor = new ShopCommandExecutor();
+        PluginCommand shopCommand = this.getCommand("shop");
+
+        if (scoinCommand != null && shopCommand != null) {
             scoinCommand.setExecutor(command);
-            scoinCommand.setTabCompleter(new SCoinTabCompleter());
+            scoinCommand.setTabCompleter(new CoinTabCompleter());
+
+            shopCommand.setExecutor(shopCommandExecutor);
+            shopCommand.setTabCompleter(new ShopTabCompleter());
         } else {
-            getLogger().severe("无法注册 scoin 命令，请检查 plugin.yml 配置");
+            getLogger().severe("无法注册 coin,shop 命令，请检查 plugin.yml 配置");
         }
     }
 
@@ -78,7 +86,7 @@ public class MikuDream extends JavaPlugin implements Listener {
         saveConfig();
     }
 
-    public void setcatkill(boolean flag, CommandSender sender) {
+    public void setskill(boolean flag, CommandSender sender) {
         getConfig().set("kill_enabled", flag);
         saveConfig();
         sender.sendMessage("§a已将 skill 功能设置为: " + skill_Enabled);

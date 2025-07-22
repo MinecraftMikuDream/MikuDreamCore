@@ -1,18 +1,19 @@
-package cn.mikudream.core.feature.scoin;
+package cn.mikudream.core.feature.coin.command;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SCoinTabCompleter implements TabCompleter {
+public class CoinTabCompleter implements TabCompleter {
 
     private static final List<String> SUBCOMMANDS = List.of("add", "list", "version", "remove", "reload");
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         List<String> completions = new ArrayList<>();
 
         if (args.length == 1) {

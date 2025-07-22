@@ -10,7 +10,7 @@ import static org.bukkit.Bukkit.getLogger;
 import static cn.mikudream.core.MikuDream.skill_Enabled;
 
 public class SConfigCommand implements CommandExecutor {
-    private static final String ADMIN_PERMISSION = "sunk.config";
+    private static final String ADMIN_PERMISSION = "mikucore.config";
     private final MikuDream plugin;
     public SConfigCommand(MikuDream plugin) {
         this.plugin = plugin;
@@ -61,7 +61,7 @@ public class SConfigCommand implements CommandExecutor {
             if (value.equals("true") || value.equals("false")) {
                 skill_Enabled = Boolean.parseBoolean(value);
                 // 同步更新配置文件
-                plugin.setcatkill(skill_Enabled,sender);
+                plugin.setskill(skill_Enabled,sender);
 
             } else {
                 sender.sendMessage("§c参数错误，必须为 true 或 false");

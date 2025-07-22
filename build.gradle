@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'cn.mikudream.core'
-version = '1.2.010'
+version = '1.2.102'
 
 repositories {
     mavenCentral()
@@ -57,7 +57,13 @@ processResources {
     filesMatching('config.yml') {
         expand props
     }
-    filesMatching('sunkcoins.yml') {
+    filesMatching('coin.yml') {
         expand props
     }
 }
+
+def void filesMatching(String s, Closure<AbstractCopyTask> abstractCopyTaskClosure) {}
+
+def void expand(LinkedHashMap<String, String> stringStringLinkedHashMap) {}
+
+def void id(String s) {}

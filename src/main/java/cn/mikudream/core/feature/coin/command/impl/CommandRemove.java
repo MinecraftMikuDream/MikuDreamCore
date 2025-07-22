@@ -1,8 +1,8 @@
-package cn.mikudream.core.feature.scoin.command.impl;
+package cn.mikudream.core.feature.coin.command.impl;
 
-import cn.mikudream.core.feature.scoin.SCoinManager;
-import cn.mikudream.core.feature.scoin.command.CommandInfo;
-import cn.mikudream.core.feature.scoin.command.SubCommand;
+import cn.mikudream.core.feature.coin.CoinsManager;
+import cn.mikudream.core.feature.coin.command.CoinCommandInfo;
+import cn.mikudream.core.feature.coin.command.CoinSubCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -10,17 +10,17 @@ import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
-@CommandInfo(
+@CoinCommandInfo(
         name = "remove",
-        purpose = "remove scoin"
+        purpose = "remove coin"
 )
-public class CommandRemove extends SubCommand {
+public class CommandRemove extends CoinSubCommand {
     private int amount;
-    public SCoinManager coinManager;
+    public CoinsManager coinManager;
 
     @Override
     protected boolean execute(CommandSender sender, Command command, String label, String[] args) {
-        if(!sender.hasPermission("scoin.remove"))
+        if(!sender.hasPermission("coin.remove"))
         {
             sender.sendMessage("§c你没有权限！");
             return false;

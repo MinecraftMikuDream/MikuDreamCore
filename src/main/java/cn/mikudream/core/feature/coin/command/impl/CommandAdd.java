@@ -1,8 +1,8 @@
-package cn.mikudream.core.feature.scoin.command.impl;
+package cn.mikudream.core.feature.coin.command.impl;
 
-import cn.mikudream.core.feature.scoin.SCoinManager;
-import cn.mikudream.core.feature.scoin.command.CommandInfo;
-import cn.mikudream.core.feature.scoin.command.SubCommand;
+import cn.mikudream.core.feature.coin.CoinsManager;
+import cn.mikudream.core.feature.coin.command.CoinCommandInfo;
+import cn.mikudream.core.feature.coin.command.CoinSubCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -10,16 +10,15 @@ import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
-@CommandInfo(name="add", purpose="Add SCoin", syntax="<player> <amount>")
-public class CommandAdd extends SubCommand {
+@CoinCommandInfo(name="add", purpose="Add Coin", syntax="<player> <amount>")
+public class CommandAdd extends CoinSubCommand {
     int amount;
-    public SCoinManager coinManager;
-    private String playerName;
+    public CoinsManager coinManager;
 
     @Override
     protected boolean execute(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 3) {
-            sender.sendMessage("§6用法: /scoin " + "add" + " <玩家> <数量>");
+            sender.sendMessage("§6用法: /coin " + "add" + " <玩家> <数量>");
             return true;
         }
         String playerName = args[1];

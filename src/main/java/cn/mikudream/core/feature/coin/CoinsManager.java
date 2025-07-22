@@ -1,4 +1,4 @@
-package cn.mikudream.core.feature.scoin;
+package cn.mikudream.core.feature.coin;
 
 import cn.mikudream.core.MikuDream;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -6,34 +6,32 @@ import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
-public class SCoinManager {
+public class CoinsManager {
     private final MikuDream plugin;
     private YamlConfiguration data;
     private File dataFile;
 
-    public SCoinManager(MikuDream plugin) {
+    public CoinsManager(MikuDream plugin) {
         this.plugin = plugin;
         loadData();
     }
 
     private void loadData() {
-        dataFile = new File(plugin.getDataFolder(), "sunkcoins.yml");
-        plugin.getLogger().info("加载金币文件: " + dataFile.getAbsolutePath());
+        dataFile = new File(plugin.getDataFolder(), "coin.yml");
 
         if (!dataFile.exists()) {
-            plugin.saveResource("sunkcoins.yml", false);
-            plugin.getLogger().info("创建新的金币文件");
+            plugin.saveResource("coin.yml", false);
         }
         data = YamlConfiguration.loadConfiguration(dataFile);
-        plugin.getLogger().info("金币文件加载完成");
+        plugin.getLogger().info("coin.yml loaded");
     }
 
     public void saveData() {
         try {
             data.save(dataFile);
-            plugin.getLogger().info("金币数据保存成功");
+            plugin.getLogger().info("coin.yml saved successfully");
         } catch (IOException e) {
-            plugin.getLogger().severe("无法保存金币数据: " + e.getMessage());
+            plugin.getLogger().severe("Unable to save coin.yml: " + e.getMessage());
         }
     }
 
@@ -41,7 +39,7 @@ public class SCoinManager {
         loadData();
         String uuidStr = uuid.toString().toLowerCase();
         int coins = data.getInt(uuidStr, 0);
-        plugin.getLogger().info("查询硬币: " + uuidStr + " -> " + coins);
+        plugin.getLogger().info("Query Coin: " + uuidStr + " -> " + coins);
         return coins;
     }
 
@@ -49,7 +47,7 @@ public class SCoinManager {
         loadData();
         String uuidStr = uuid.toString().toLowerCase();
         data.set(uuidStr, amount);
-        plugin.getLogger().info("设置硬币: " + uuidStr + " = " + amount);
+        plugin.getLogger().info("set coin: " + uuidStr + " = " + amount);
         saveData();
     }
 
@@ -68,12 +66,12 @@ public class SCoinManager {
             saveData();
         }
         else if(getCoins(uuid) == 0){
-            plugin.getLogger().severe("移除硬币失败: 对方sunkcoin为0");
+            plugin.getLogger().severe("Failed to remove coin: opponent's coin is 0");
         }
     }
 
     public void reload() {
         loadData();
-        plugin.getLogger().info("金币数据重新加载完成");
+        plugin.getLogger().info("coin.yml reloaded");
     }
 }

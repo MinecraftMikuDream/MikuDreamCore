@@ -1,60 +1,65 @@
 name: MikuDreamCore
-version: '1.2.010'
+version: '1.2.102'
 main: cn.mikudream.core.MikuDream
 api-version: '1.21'
 authors: [onea]
 folia-supported: true
 soft-depend: []
-website: https://github.com/oneachina/SunkPlugin
+website: https://cysunk.mlzi.top/
 commands:
   hub:
     description: hub
   skill:
     description: skill
   sconfig:
-    description: sconfig
+    description: config
   sbreakboard:
     description: off & on the breakboard
-    usage: /sbreakboard
-  scoin:
-    description: 查看scoin
-    usage: /scoin
+  coin:
+    description: coin
   sv:
     description: sv
-    usage: /sv
   srf:
     description: srf
-    usage: /srf
   svold:
     description: svold
-    usage: /svold
+  shop:
+    description: shop
 
 
 permissions:
-  sunk.config:
+  mikucore.config:
     description: config
     default: op
-  sunk.breakboard:
+  mikucore.breakboard:
     description: breakboard
     default: true
-  scoin.commands:
-    description: 使用scoin命令的总权限
-    default: true
-  scoin.list:
-    description: 使用list子命令
-    default: true
-  scoin.add:
-    description: 使用add子命令
-    default: op
-  scoin.version:
-    description: 使用version子命令
-    default: true
-  sunk.sv:
+  mikucore.sv:
     description: sv
     default: op
-  scoin.reload:
+
+  coin.commands:
+    description: 使用scoin命令的总权限
+    default: true
+  coin.list:
+    description: 使用list子命令
+    default: true
+  coin.add:
+    description: 使用add子命令
+    default: op
+  coin.version:
+    description: 使用version子命令
+    default: true
+  coin.reload:
     description: 使用reload子命令
     default: op
-  scoin.remove:
+  coin.remove:
     description: 使用remove子命令
     default: op
+
+  shop.commands:
+    description: shop
+    default: true
+  shop.list:
+    description: 使用list子命令
+    default: true

@@ -4,7 +4,7 @@ import cn.mikudream.core.MikuDream;
 import cn.mikudream.core.command.impl.*;
 import cn.mikudream.core.feature.breakboard.BreakBoardManager;
 import cn.mikudream.core.feature.breakboard.BreakListener;
-import cn.mikudream.core.feature.scoin.SCoinManager;
+import cn.mikudream.core.feature.coin.CoinsManager;
 import org.bukkit.Server;
 
 public class SCommand {
@@ -12,7 +12,7 @@ public class SCommand {
     public void init()
     {
         BreakBoardManager breakBoardManager = new BreakBoardManager();
-        SCoinManager sCoinManager = new SCoinManager(plugin);
+        CoinsManager mikuCoinsManager = new CoinsManager(plugin);
         plugin.getServer().getPluginManager().registerEvents(new BreakListener(breakBoardManager), plugin);
         try {
             plugin.getCommand("sbreakboard").setExecutor(new BreakBoardCommand(breakBoardManager));
@@ -20,8 +20,7 @@ public class SCommand {
             plugin.getCommand("sconfig").setExecutor(new SConfigCommand(plugin));
             plugin.getCommand("hub").setExecutor(new Hub(plugin));
             plugin.getCommand("sv").setExecutor(new SVCommand());
-            plugin.getCommand("svold").setExecutor(new SVCommandOLD());
-            plugin.getCommand("srf").setExecutor(new SRFCommand(plugin, sCoinManager));
+            plugin.getCommand("srf").setExecutor(new SRFCommand(plugin, mikuCoinsManager));
         } catch (Exception e) {
             Server server = plugin.getServer();
             server.getLogger().severe("注册命令时出现错误: " + e.getMessage());

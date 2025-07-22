@@ -1,4 +1,4 @@
-package cn.mikudream.core.feature.scoin.command;
+package cn.mikudream.core.feature.shop.command;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(value=RetentionPolicy.RUNTIME)
 @Target(value={ElementType.TYPE})
-public @interface CommandInfo {
+public @interface ShopCommandInfo {
     String name();
 
     String purpose();
