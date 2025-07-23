@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'cn.mikudream.core'
-version = '1.2.208'
+version = '1.2.256'
 
 repositories {
     mavenCentral()
@@ -58,6 +58,9 @@ processResources {
         expand props
     }
     filesMatching('coin.yml') {
+        expand props
+    }
+    filesMatching('shop.yml') {
         expand props
     }
 }

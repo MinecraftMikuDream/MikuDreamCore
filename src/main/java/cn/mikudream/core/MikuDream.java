@@ -8,8 +8,12 @@ import cn.mikudream.core.feature.coin.command.CoinCommandExecutor;
 import cn.mikudream.core.feature.friend.FriendSystem;
 import cn.mikudream.core.feature.friend.command.FriendCommandExecutor;
 import cn.mikudream.core.feature.friend.command.FriendTabCompleter;
+import cn.mikudream.core.feature.playermarket.PlayerMarketManager;
+import cn.mikudream.core.feature.playermarket.command.PlayerMarketCommand;
+import cn.mikudream.core.feature.playermarket.listener.PlayerMarketListener;
+import cn.mikudream.core.feature.shop.ShopManager;
 import cn.mikudream.core.feature.shop.command.ShopCommandExecutor;
-import cn.mikudream.core.feature.shop.command.ShopTabCompleter;
+import cn.mikudream.core.feature.shop.listener.ShopListener;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
@@ -49,18 +53,12 @@ public class MikuDream extends JavaPlugin implements Listener {
         CoinCommandExecutor command = new CoinCommandExecutor(mikuCoinsManager);
         PluginCommand scoinCommand = this.getCommand("coin");
 
-        ShopCommandExecutor shopCommandExecutor = new ShopCommandExecutor();
-        PluginCommand shopCommand = this.getCommand("shop");
-
         FriendCommandExecutor friendCommandExecutor = new FriendCommandExecutor(friendSystem);
         PluginCommand friendCommand = this.getCommand("friend");
 
-        if (scoinCommand != null && shopCommand != null && friendCommand != null) {
+        if (scoinCommand != null && friendCommand != null) {
             scoinCommand.setExecutor(command);
             scoinCommand.setTabCompleter(new CoinTabCompleter());
-
-            shopCommand.setExecutor(shopCommandExecutor);
-            shopCommand.setTabCompleter(new ShopTabCompleter());
 
             friendCommand.setExecutor(friendCommandExecutor);
             friendCommand.setTabCompleter(new FriendTabCompleter(friendSystem));
@@ -68,6 +66,18 @@ public class MikuDream extends JavaPlugin implements Listener {
         } else {
             getLogger().severe("无法注册 coin,shop 命令，请检查 plugin.yml 配置");
         }
+
+        // shop
+        ShopManager.init(this);
+        getServer().getPluginManager().registerEvents(new ShopListener(), this);
+        getCommand("shop").setExecutor(new ShopCommandExecutor());
+
+        // playerMarket
+        PlayerMarketManager.init(this);
+        getServer().getPluginManager().registerEvents(new PlayerMarketListener(), this);
+        getCommand("playermarket").setExecutor(new PlayerMarketCommand());
+
+        getLogger().info("MikuDream插件已启用!");
     }
 
     @Override
