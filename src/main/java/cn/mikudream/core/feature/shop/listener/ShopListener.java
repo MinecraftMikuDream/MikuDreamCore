@@ -1,13 +1,12 @@
 package cn.mikudream.core.feature.shop.listener;
 
-import cn.mikudream.core.feature.playermarket.gui.PlayerMarketGUI;
 import cn.mikudream.core.feature.shop.gui.AdminShopGUI;
 import cn.mikudream.core.feature.shop.gui.ShopGUI;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerChatEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 public class ShopListener implements Listener {
 
@@ -24,21 +23,15 @@ public class ShopListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerChat(PlayerChatEvent event) {
+    public void onPlayerChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
         String message = event.getMessage();
 
-        if (ShopGUI.handlePurchase(player, message)) {
-            event.setCancelled(true);
-            return;
-        }
+        boolean handlePurchase = ShopGUI.handlePurchase(player, message);
+        boolean handleAdminCommand = AdminShopGUI.handleAdminCommand(player, message);
+        boolean handleSale = ShopGUI.handleSale(player, message);
 
-        if (AdminShopGUI.handleAdminCommand(player, message)) {
-            event.setCancelled(true);
-            return;
-        }
-
-        if (ShopGUI.handleSale(player, message)) {
+        if (handlePurchase || handleAdminCommand || handleSale) {
             event.setCancelled(true);
         }
     }

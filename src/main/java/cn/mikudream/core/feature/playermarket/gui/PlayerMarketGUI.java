@@ -44,11 +44,12 @@ public class PlayerMarketGUI implements InventoryHolder {
         // 添加市场物品
         for (int i = startIndex; i < endIndex; i++) {
             PlayerMarketManager.MarketItem marketItem = allItems.get(i);
-            ItemStack item = marketItem.createItemStack();
-            ItemMeta meta = item.getItemMeta();
+            ItemStack displayItem = marketItem.getSampleItem().clone();
+            ItemMeta meta = displayItem.getItemMeta();
 
             if (meta != null) {
                 meta.setDisplayName(ChatColor.GREEN + marketItem.getDisplayName());
+                displayItem.setItemMeta(meta);
 
                 String sellerName = "未知卖家";
                 Player seller = Bukkit.getPlayer(marketItem.getSellerId()); // 使用 getSellerId()
@@ -68,10 +69,11 @@ public class PlayerMarketGUI implements InventoryHolder {
                         "",
                         ChatColor.GREEN + "左键购买"
                 ));
-                item.setItemMeta(meta);
+
+                displayItem.setItemMeta(meta);
             }
 
-            inventory.setItem(i - startIndex, item);
+            inventory.setItem(i - startIndex, displayItem);
             itemSlots.put(i - startIndex, marketItem.getItemid());
         }
 
@@ -216,14 +218,12 @@ public class PlayerMarketGUI implements InventoryHolder {
                     return true;
                 }
 
-                // 扣除买家硬币
                 coinsManager.removeCoins(player.getUniqueId(), totalCost);
 
-                // 给予买家物品
-                ItemStack purchasedItem = new ItemStack(marketItem.getMaterial(), amount);
+                ItemStack purchasedItem = marketItem.getSampleItem().clone();
+                purchasedItem.setAmount(amount);
                 player.getInventory().addItem(purchasedItem);
 
-                // 给卖家转账
                 Player seller = Bukkit.getPlayer(marketItem.getItemid());
                 if (seller != null && seller.isOnline()) {
                     coinsManager.addCoins(seller.getUniqueId(), totalCost);
@@ -231,11 +231,9 @@ public class PlayerMarketGUI implements InventoryHolder {
                             marketItem.getDisplayName() + " x" + amount +
                             "，获得 " + totalCost + " 硬币");
                 } else {
-                    // 如果卖家不在线，保存到离线数据
                     coinsManager.addCoins(marketItem.getItemid(), totalCost);
                 }
 
-                // 更新市场物品
                 int remaining = marketItem.getAmount() - amount;
                 if (remaining <= 0) {
                     PlayerMarketManager.getInstance().removeMarketItem(marketItem.getSellerId(), marketItem.getItemid());

@@ -14,9 +14,16 @@ import java.util.UUID;
 public class CommandAdd extends CoinSubCommand {
     int amount;
     public CoinsManager coinManager;
+    private final String Permission = "coin.add";
 
     @Override
     protected boolean execute(CommandSender sender, Command command, String label, String[] args) {
+        if(!sender.hasPermission(Permission))
+        {
+            sender.sendMessage("§c你没有权限执行此命令！");
+            return true;
+        }
+
         if (args.length < 3) {
             sender.sendMessage("§6用法: /coin " + "add" + " <玩家> <数量>");
             return true;

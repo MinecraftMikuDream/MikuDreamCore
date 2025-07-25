@@ -55,12 +55,14 @@ public class PlayerMarketManager {
             List<MarketItem> items = new ArrayList<>();
 
             for (String itemId : marketConfig.getConfigurationSection(sellerId).getKeys(false)) {
-                Material material = Material.matchMaterial(Objects.requireNonNull(marketConfig.getString(sellerId + "." + itemId + ".material")));
+                Map<String, Object> itemData = marketConfig.getConfigurationSection(sellerId + "." + itemId + ".item")
+                        .getValues(false);
+                ItemStack itemStack = ItemStack.deserialize(itemData);
+
                 int amount = marketConfig.getInt(sellerId + "." + itemId + ".amount");
                 int price = marketConfig.getInt(sellerId + "." + itemId + ".price");
-                String displayName = marketConfig.getString(sellerId + "." + itemId + ".displayName");
 
-                items.add(new MarketItem(UUID.fromString(itemId), seller, material, amount, price, displayName));
+                items.add(new MarketItem(UUID.fromString(itemId), seller, itemStack, amount, price));
             }
 
             marketItems.put(seller, items);
@@ -70,15 +72,12 @@ public class PlayerMarketManager {
     private void saveToConfig() {
         for (Map.Entry<UUID, List<MarketItem>> entry : marketItems.entrySet()) {
             String sellerKey = entry.getKey().toString();
-            int index = 0;
 
             for (MarketItem item : entry.getValue()) {
                 String itemKey = sellerKey + "." + item.getItemid().toString();
-                marketConfig.set(itemKey + ".material", item.getMaterial().name());
+                marketConfig.set(itemKey + ".item", item.getSampleItem().serialize());
                 marketConfig.set(itemKey + ".amount", item.getAmount());
                 marketConfig.set(itemKey + ".price", item.getPrice());
-                marketConfig.set(itemKey + ".displayName", item.getDisplayName());
-                index++;
             }
         }
 
@@ -96,10 +95,9 @@ public class PlayerMarketManager {
         MarketItem marketItem = new MarketItem(
                 UUID.randomUUID(),
                 seller.getUniqueId(),
-                item.getType(),
+                item,
                 amount,
-                price,
-                getDisplayName(item)
+                price
         );
 
         sellerItems.add(marketItem);
@@ -171,18 +169,17 @@ public class PlayerMarketManager {
     public static class MarketItem {
         private final UUID itemid;
         private final UUID sellerId; // 新增卖家ID字段
-        private final Material material;
+        private final ItemStack sampleItem;
         private int amount;
         private final int price;
-        private final String displayName;
 
-        public MarketItem(UUID itemid, UUID sellerId, Material material, int amount, int price, String displayName) {
+        public MarketItem(UUID itemid, UUID sellerId, ItemStack sampleItem, int amount, int price) {
             this.itemid = itemid;
             this.sellerId = sellerId;
-            this.material = material;
+            this.sampleItem = sampleItem.clone();
+            this.sampleItem.setAmount(1);
             this.amount = amount;
             this.price = price;
-            this.displayName = displayName;
         }
 
         public UUID getSellerId() {
@@ -193,8 +190,8 @@ public class PlayerMarketManager {
             return itemid;
         }
 
-        public Material getMaterial() {
-            return material;
+        public ItemStack getSampleItem() {
+            return sampleItem.clone();
         }
 
         public int getAmount() {
@@ -210,11 +207,14 @@ public class PlayerMarketManager {
         }
 
         public String getDisplayName() {
-            return displayName;
+            if (sampleItem.hasItemMeta() && sampleItem.getItemMeta().hasDisplayName()) {
+                return sampleItem.getItemMeta().getDisplayName();
+            }
+            return PlayerMarketManager.getInstance().formatMaterialName(sampleItem.getType());
         }
 
         public ItemStack createItemStack() {
-            return new ItemStack(material);
+            return sampleItem.clone();
         }
     }
 }
