@@ -1,14 +1,50 @@
-# Copyright (c) oneachina
-# The project uses the GPL-3 license
-# This configuration is used by MikuDream
+# MikuDream 插件配置
 
-# Whether to enable the skill command
-skill: true
-
-# Dimension has overworld , the_end and the_nether
-# Over World and The Nether are not recommended
+# 主城设置
 lobby:
+  world: "world"
   x: 0
-  y: 0
+  y: 64
   z: 0
-  dimension: minecraft:the_end
+
+# 功能开关
+skill:
+  enabled: true
+
+# 硬币系统设置
+coin:
+  # 初始硬币数量
+  default-amount: 100
+  # 每日登录奖励
+  daily-reward: 50
+
+# 商店设置
+shop:
+  # 商店最大物品数量
+  max-items: 54
+  # 默认买入价格倍数
+  default-buy-multiplier: 1.5
+
+# 玩家市场设置
+player-market:
+  # 市场上架费用（百分比）
+  listing-fee: 0.05
+  # 最大上架物品数量
+  max-listings-per-player: 20
+
+# 抽奖系统设置
+lottery:
+  # 普通抽奖价格
+  normal-cost: 288
+  # 中奖概率（百分比）
+  prize-probabilities:
+    jackpot: 1.0
+    medium: 15.0
+    small: 30.0
+
+# 好友系统设置
+friend:
+  # 最大好友数量
+  max-friends: 50
+  # 好友传送冷却时间（秒）
+  teleport-cooldown: 60

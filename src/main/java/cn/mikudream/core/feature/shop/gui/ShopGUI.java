@@ -1,10 +1,11 @@
 package cn.mikudream.core.feature.shop.gui;
 
-import cn.mikudream.core.MikuDream;
-import cn.mikudream.core.feature.coin.CoinsManager;
-import cn.mikudream.core.feature.shop.ShopManager;
+import cn.mikudream.core.managers.CoinsManager;
+import cn.mikudream.core.managers.ShopManager;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -16,57 +17,99 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ShopGUI implements InventoryHolder {
     private final Inventory inventory;
     private final Player player;
     private final Map<Integer, ShopManager.ShopItem> itemSlots = new HashMap<>();
-    private static final Map<UUID, Material> pendingPurchases = new HashMap<>();
-    private static final Map<UUID, Material> pendingSales = new HashMap<>();
+
+    private record PendingTransaction(
+            UUID playerId,
+            Material material,
+            TransactionType type,
+            long timestamp
+    ) {
+        enum TransactionType { PURCHASE, SALE }
+    }
+
+    private static final ExecutorService asyncExecutor = Executors.newThreadPerTaskExecutor(
+            Thread.ofVirtual().name("shop-gui-", 0).factory()
+    );
+
+    private static final Map<UUID, PendingTransaction> pendingTransactions = new ConcurrentHashMap<>();
 
     public ShopGUI(Player player) {
         this.player = player;
-        this.inventory = Bukkit.createInventory(this, 54, ChatColor.GOLD + "ÂïÜÂ∫ó");
+        this.inventory = Bukkit.createInventory(this, 54, "°Ï#1affd9…Ã°Ï#2eff7eµÍ");
         setupItems();
     }
 
     private void setupItems() {
-        int slot = 0;
-        for (ShopManager.ShopItem shopItem : ShopManager.getInstance().getAllShopItems()) {
-            ItemStack item = shopItem.createShopItem();
-            ItemMeta meta = item.getItemMeta();
+        ShopManager.getInstance().getAllShopItems().stream()
+                .limit(45)
+                .forEachOrdered(shopItem -> {
+                    int slot = itemSlots.size();
+                    inventory.setItem(slot, createShopItemDisplay(shopItem));
+                    itemSlots.put(slot, shopItem);
+                });
 
-            if (meta != null) {
-                meta.setDisplayName(ChatColor.GREEN + shopItem.displayName());
-                meta.setLore(Arrays.asList(
-                        ChatColor.GRAY + "Â∑¶ÈîÆË¥≠‰π∞",
-                        ChatColor.GOLD + "‰π∞ÂÖ•‰ª∑: " + ChatColor.WHITE + shopItem.buyPrice() + " Á°¨Â∏Å",
-                        ChatColor.GREEN + "ÂçñÂá∫‰ª∑: " + ChatColor.WHITE + shopItem.sellPrice() + " Á°¨Â∏Å"
-                ));
-                item.setItemMeta(meta);
-            }
+        inventory.setItem(53, createInfoItem());
+    }
 
-            inventory.setItem(slot, item);
-            itemSlots.put(slot, shopItem);
-            slot++;
-        }
+    private ItemStack createShopItemDisplay(ShopManager.ShopItem shopItem) {
+        ItemStack item = shopItem.createShopItem();
+        ItemMeta meta = item.getItemMeta();
 
-        // Ê∑ªÂä†‰ø°ÊÅØÈ°π
-        ItemStack infoItem = new ItemStack(Material.BOOK);
-        ItemMeta infoMeta = infoItem.getItemMeta();
-        if (infoMeta != null) {
-            infoMeta.setDisplayName(ChatColor.YELLOW + "ÂïÜÂ∫óÂ∏ÆÂä©");
-            infoMeta.setLore(Arrays.asList(
-                    ChatColor.GRAY + "Â∑¶ÈîÆÁÇπÂáªÂïÜÂìÅË¥≠‰π∞",
-                    ChatColor.GRAY + "Ë¥≠‰π∞Âêé‰ºöÊèêÁ§∫ËæìÂÖ•Êï∞Èáè",
-                    ChatColor.GRAY + "ËæìÂÖ•Êï∞ÈáèÂêéÂÆåÊàê‰∫§Êòì",
-                    "",
-                    ChatColor.GOLD + "‰Ω†ÁöÑÁ°¨Â∏Å: " + ChatColor.WHITE +
-                            new CoinsManager(MikuDream.getInstance()).getCoins(player.getUniqueId())
+        if (meta != null) {
+            meta.displayName(Component.text(shopItem.displayName())
+                    .color(NamedTextColor.GREEN)
+                    .decorate(TextDecoration.BOLD));
+
+            meta.lore(List.of(
+                    Component.text("◊Ûº¸π∫¬Ú").color(NamedTextColor.GRAY),
+                    Component.text("¬Ú»Îº€: ")
+                            .append(Component.text(shopItem.buyPrice() + " ”≤±“")
+                                    .color(NamedTextColor.WHITE))
+                            .color(NamedTextColor.GOLD),
+                    Component.text("¬Ù≥ˆº€: ")
+                            .append(Component.text(shopItem.sellPrice() + " ”≤±“")
+                                    .color(NamedTextColor.WHITE))
+                            .color(NamedTextColor.GREEN)
             ));
-            infoItem.setItemMeta(infoMeta);
+
+            item.setItemMeta(meta);
         }
-        inventory.setItem(53, infoItem);
+
+        return item;
+    }
+
+    private ItemStack createInfoItem() {
+        ItemStack infoItem = new ItemStack(Material.BOOK);
+        ItemMeta meta = infoItem.getItemMeta();
+
+        if (meta != null) {
+            meta.displayName(Component.text("…ÃµÍ∞Ô÷˙")
+                    .color(NamedTextColor.YELLOW));
+
+            long playerCoins = CoinsManager.getInstance().getCoins(player.getUniqueId());
+            meta.lore(List.of(
+                    Component.text("◊Ûº¸µ„ª˜…Ã∆∑π∫¬Ú").color(NamedTextColor.GRAY),
+                    Component.text("π∫¬Ú∫Ûª·Ã· æ ‰»Î ˝¡ø").color(NamedTextColor.GRAY),
+                    Component.text(" ‰»Î ˝¡ø∫ÛÕÍ≥…Ωª“◊").color(NamedTextColor.GRAY),
+                    Component.empty(),
+                    Component.text("ƒ„µƒ”≤±“: ")
+                            .append(Component.text(playerCoins)
+                                    .color(NamedTextColor.WHITE))
+                            .color(NamedTextColor.GOLD)
+            ));
+
+            infoItem.setItemMeta(meta);
+        }
+
+        return infoItem;
     }
 
     @Override
@@ -83,139 +126,164 @@ public class ShopGUI implements InventoryHolder {
 
         ShopManager.ShopItem shopItem = itemSlots.get(slot);
         if (shopItem != null) {
-            if (event.isLeftClick()) {
-                player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-                pendingPurchases.put(player.getUniqueId(), shopItem.material());
-                player.sendMessage(ChatColor.GOLD + "ËØ∑ËæìÂÖ•Ë¥≠‰π∞Êï∞Èáè (ÂΩìÂâçÁ°¨Â∏Å: " +
-                        new CoinsManager(MikuDream.getInstance()).getCoins(player.getUniqueId()) + ")");
-            }
-            else if (event.isRightClick()) {
-                handleRightClickSell((Player) event.getWhoClicked(), Objects.requireNonNull(event.getCurrentItem()));
+            switch (event.getClick()) {
+                case LEFT -> handlePurchaseClick(shopItem);
+                case RIGHT -> handleSellClick(shopItem);
+                default -> {}
             }
         }
     }
 
-    public static boolean handlePurchase(Player player, String message) {
-        if (pendingPurchases.containsKey(player.getUniqueId())) {
-            Material material = pendingPurchases.get(player.getUniqueId());
-            ShopManager.ShopItem shopItem = ShopManager.getInstance().getShopItem(material);
+    private void handlePurchaseClick(ShopManager.ShopItem shopItem) {
+        player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+        pendingTransactions.put(player.getUniqueId(),
+                new PendingTransaction(
+                        player.getUniqueId(),
+                        shopItem.material(),
+                        PendingTransaction.TransactionType.PURCHASE,
+                        System.currentTimeMillis()
+                ));
 
-            if (shopItem == null) {
-                player.sendMessage(ChatColor.RED + "ËØ•ÂïÜÂìÅÂ∑≤‰∏çÂ≠òÂú®ÔºåËØ∑ÈáçÊñ∞ÊâìÂºÄÂïÜÂ∫ó");
-                pendingPurchases.remove(player.getUniqueId());
-                return true;
-            }
-
-            try {
-                int amount = Integer.parseInt(message);
-                if (amount <= 0) {
-                    player.sendMessage(ChatColor.RED + "Êï∞ÈáèÂøÖÈ°ªÂ§ß‰∫é0");
-                    return true;
-                }
-
-                CoinsManager coinsManager = new CoinsManager(MikuDream.getInstance());
-                int totalCost = shopItem.buyPrice() * amount;
-                int playerCoins = coinsManager.getCoins(player.getUniqueId());
-
-                if (playerCoins < totalCost) {
-                    player.sendMessage(ChatColor.RED + "Á°¨Â∏Å‰∏çË∂≥! ÈúÄË¶Å " + totalCost +
-                            ", ÂΩìÂâçÊúâ " + playerCoins);
-                    pendingPurchases.remove(player.getUniqueId());
-                    return true;
-                }
-
-                if (player.getInventory().firstEmpty() == -1) {
-                    player.sendMessage(ChatColor.RED + "ËÉåÂåÖÂ∑≤Êª°ÔºåÊó†Ê≥ïË¥≠‰π∞Áâ©ÂìÅ");
-                    pendingPurchases.remove(player.getUniqueId());
-                    return true;
-                }
-
-                coinsManager.removeCoins(player.getUniqueId(), totalCost);
-                player.getInventory().addItem(new ItemStack(material, amount));
-
-                player.sendMessage(String.format(ChatColor.GREEN + "ÊàêÂäüË¥≠‰π∞ %d ‰∏™ %sÔºåËä±Ë¥π %d Á°¨Â∏Å",
-                        amount, shopItem.displayName(), totalCost));
-
-                pendingPurchases.remove(player.getUniqueId());
-                return true;
-            } catch (NumberFormatException e) {
-                player.sendMessage(ChatColor.RED + "ËØ∑ËæìÂÖ•ÊúâÊïàÁöÑÊï∞Â≠óÊï∞Èáè");
-                return true;
-            }
-        }
-        return false;
+        player.sendMessage(Component.text()
+                .append(Component.text("«Î ‰»Îπ∫¬Ú ˝¡ø ")
+                        .color(NamedTextColor.GOLD))
+                .append(Component.text("(µ±«∞”≤±“: " +
+                                CoinsManager.getInstance().getCoins(player.getUniqueId()) + ")")
+                        .color(NamedTextColor.WHITE))
+                .build());
     }
 
-    public void handleRightClickSell(Player player, ItemStack clickedItem) {
-        Material material = clickedItem.getType();
-        ShopManager.ShopItem shopItem = ShopManager.getInstance().getShopItem(material);
+    private void handleSellClick(ShopManager.ShopItem shopItem) {
+        pendingTransactions.put(player.getUniqueId(),
+                new PendingTransaction(
+                        player.getUniqueId(),
+                        shopItem.material(),
+                        PendingTransaction.TransactionType.SALE,
+                        System.currentTimeMillis()
+                ));
 
-        if (shopItem == null) {
-            player.sendMessage(ChatColor.RED + "ËØ•Áâ©ÂìÅ‰∏çËÉΩÂú®ÂïÜÂ∫óÂá∫ÂîÆ");
-            return;
-        }
-
-        pendingSales.put(player.getUniqueId(), material);
         player.closeInventory();
 
-        player.sendMessage(ChatColor.GOLD + "ËØ∑ËæìÂÖ•Ë¶ÅÂá∫ÂîÆÁöÑÊï∞Èáè (ËÉåÂåÖ‰∏≠Êúâ: " +
-                countItemsInInventory(player, material) + " ‰∏™)");
+        int available = countItemsInInventory(player, shopItem.material());
+        player.sendMessage(Component.text()
+                .append(Component.text("«Î ‰»Î“™≥ˆ €µƒ ˝¡ø ")
+                        .color(NamedTextColor.GOLD))
+                .append(Component.text("(±≥∞¸÷–”–: " + available + " ∏ˆ)")
+                        .color(NamedTextColor.WHITE))
+                .build());
+    }
+
+    public boolean handleChatInteraction(Player player, String message) {
+        PendingTransaction transaction = pendingTransactions.get(player.getUniqueId());
+        if (transaction == null) return false;
+
+        // «Â¿Ìπ˝∆⁄Ωª“◊
+        if (System.currentTimeMillis() - transaction.timestamp() > 30000) {
+            pendingTransactions.remove(player.getUniqueId());
+            return false;
+        }
+
+        // “Ï≤Ω¥¶¿ÌΩª“◊
+        asyncExecutor.submit(() -> processTransaction(player, transaction, message));
+        return true;
+    }
+
+    private void processTransaction(Player player, PendingTransaction transaction, String message) {
+        try {
+            int amount = Integer.parseInt(message);
+            if (amount <= 0) {
+                player.sendMessage(Component.text(" ˝¡ø±ÿ–Î¥Û”⁄0").color(NamedTextColor.RED));
+                return;
+            }
+
+            switch (transaction.type()) {
+                case PURCHASE -> processPurchase(player, transaction.material(), amount);
+                case SALE -> processSale(player, transaction.material(), amount);
+            }
+
+            pendingTransactions.remove(player.getUniqueId());
+        } catch (NumberFormatException e) {
+            player.sendMessage(Component.text("«Î ‰»Î”––ßµƒ ˝◊÷ ˝¡ø").color(NamedTextColor.RED));
+        }
+    }
+
+    private void processPurchase(Player player, Material material, int amount) {
+        ShopManager.getShopItem(material).ifPresentOrElse(shopItem -> {
+            CoinsManager coinsManager = CoinsManager.getInstance();
+            long totalCost = (long) shopItem.buyPrice() * amount;
+            long playerCoins = coinsManager.getCoins(player.getUniqueId());
+
+            if (playerCoins < totalCost) {
+                player.sendMessage(Component.text()
+                        .append(Component.text("”≤±“≤ª◊„! –Ë“™ ")
+                                .color(NamedTextColor.RED))
+                        .append(Component.text(totalCost)
+                                .color(NamedTextColor.WHITE))
+                        .append(Component.text(", µ±«∞”– ")
+                                .color(NamedTextColor.RED))
+                        .append(Component.text(playerCoins)
+                                .color(NamedTextColor.WHITE))
+                        .build());
+                return;
+            }
+
+            if (player.getInventory().firstEmpty() == -1) {
+                player.sendMessage(Component.text("±≥∞¸“—¬˙£¨Œﬁ∑®π∫¬ÚŒÔ∆∑").color(NamedTextColor.RED));
+                return;
+            }
+
+            coinsManager.removeCoins(player.getUniqueId(), totalCost);
+            player.getInventory().addItem(new ItemStack(material, amount));
+
+            player.sendMessage(Component.text()
+                    .append(Component.text("≥…π¶π∫¬Ú ")
+                            .color(NamedTextColor.GREEN))
+                    .append(Component.text(amount + " ∏ˆ " + shopItem.displayName())
+                            .color(NamedTextColor.WHITE))
+                    .append(Component.text("£¨ª®∑— ")
+                            .color(NamedTextColor.GREEN))
+                    .append(Component.text(totalCost + " ”≤±“")
+                            .color(NamedTextColor.WHITE))
+                    .build());
+        }, () -> player.sendMessage(Component.text("∏√…Ã∆∑“—≤ª¥Ê‘⁄").color(NamedTextColor.RED)));
+    }
+
+    private void processSale(Player player, Material material, int amount) {
+        ShopManager.getShopItem(material).ifPresentOrElse(shopItem -> {
+            int available = countItemsInInventory(player, material);
+            if (available < amount) {
+                player.sendMessage(Component.text()
+                        .append(Component.text(" ˝¡ø≤ª◊„! ±≥∞¸÷–”– ")
+                                .color(NamedTextColor.RED))
+                        .append(Component.text(available + " ∏ˆ")
+                                .color(NamedTextColor.WHITE))
+                        .build());
+                return;
+            }
+
+            removeItemsFromInventory(player, material, amount);
+            int totalEarned = shopItem.sellPrice() * amount;
+            CoinsManager.getInstance().addCoins(player.getUniqueId(), totalEarned);
+
+            player.sendMessage(Component.text()
+                    .append(Component.text("≥…π¶≥ˆ € ")
+                            .color(NamedTextColor.GREEN))
+                    .append(Component.text(amount + " ∏ˆ " + shopItem.displayName())
+                            .color(NamedTextColor.WHITE))
+                    .append(Component.text("£¨ªÒµ√ ")
+                            .color(NamedTextColor.GREEN))
+                    .append(Component.text(totalEarned + " ”≤±“")
+                            .color(NamedTextColor.WHITE))
+                    .build());
+        }, () -> player.sendMessage(Component.text("∏√…Ã∆∑“—≤ª¥Ê‘⁄").color(NamedTextColor.RED)));
     }
 
     private static int countItemsInInventory(Player player, Material material) {
-        int count = 0;
-        for (ItemStack item : player.getInventory().getContents()) {
-            if (item != null && item.getType() == material) {
-                count += item.getAmount();
-            }
-        }
-        return count;
-    }
-
-    public static boolean handleSale(Player player, String message) {
-        if (pendingSales.containsKey(player.getUniqueId())) {
-            Material material = pendingSales.get(player.getUniqueId());
-            ShopManager.ShopItem shopItem = ShopManager.getInstance().getShopItem(material);
-
-            if (shopItem == null) {
-                player.sendMessage(ChatColor.RED + "ËØ•ÂïÜÂìÅÂ∑≤‰∏çÂ≠òÂú®ÔºåÊó†Ê≥ïÂá∫ÂîÆ");
-                pendingSales.remove(player.getUniqueId());
-                return true;
-            }
-
-            try {
-                int amount = Integer.parseInt(message);
-                if (amount <= 0) {
-                    player.sendMessage(ChatColor.RED + "Êï∞ÈáèÂøÖÈ°ªÂ§ß‰∫é0");
-                    return true;
-                }
-
-                int available = countItemsInInventory(player, material);
-                if (available < amount) {
-                    player.sendMessage(ChatColor.RED + "Êï∞Èáè‰∏çË∂≥! ËÉåÂåÖ‰∏≠Êúâ " + available + " ‰∏™");
-                    pendingSales.remove(player.getUniqueId());
-                    return true;
-                }
-
-                // ÁßªÈô§Áâ©ÂìÅ
-                removeItemsFromInventory(player, material, amount);
-
-                // ËÆ°ÁÆóÊî∂Áõä
-                int totalEarned = shopItem.sellPrice() * amount;
-                CoinsManager coinsManager = new CoinsManager(MikuDream.getInstance());
-                coinsManager.addCoins(player.getUniqueId(), totalEarned);
-
-                player.sendMessage(String.format(ChatColor.GREEN + "ÊàêÂäüÂá∫ÂîÆ %d ‰∏™ %sÔºåËé∑Âæó %d Á°¨Â∏Å",
-                        amount, shopItem.displayName(), totalEarned));
-
-                pendingSales.remove(player.getUniqueId());
-                return true;
-            } catch (NumberFormatException e) {
-                player.sendMessage(ChatColor.RED + "ËØ∑ËæìÂÖ•ÊúâÊïàÁöÑÊï∞Â≠óÊï∞Èáè");
-                return true;
-            }
-        }
-        return false;
+        return Arrays.stream(player.getInventory().getContents())
+                .filter(Objects::nonNull)
+                .filter(item -> item.getType() == material)
+                .mapToInt(ItemStack::getAmount)
+                .sum();
     }
 
     private static void removeItemsFromInventory(Player player, Material material, int amount) {
@@ -229,5 +297,16 @@ public class ShopGUI implements InventoryHolder {
             }
         }
         player.updateInventory();
+    }
+
+    // ÃÌº”À˘–Ë“¿¿µ
+    static {
+        try {
+            Class.forName("net.kyori.adventure.text.Component");
+            Class.forName("net.kyori.adventure.text.format.NamedTextColor");
+            Class.forName("net.kyori.adventure.text.format.TextDecoration");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Adventure API not found", e);
+        }
     }
 }

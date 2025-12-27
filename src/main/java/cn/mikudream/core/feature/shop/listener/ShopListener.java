@@ -7,18 +7,28 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.jspecify.annotations.NonNull;
 
 public class ShopListener implements Listener {
 
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) return;
+    public void onInventoryClick(@NonNull InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player)) return;
 
-        if (event.getInventory().getHolder() instanceof ShopGUI shopGUI) {
-            shopGUI.onInventoryClick(event);
-        }
-        else if (event.getInventory().getHolder() instanceof AdminShopGUI adminShopGUI) {
-            adminShopGUI.onInventoryClick(event);
+        boolean handled = switch (event.getInventory().getHolder()) {
+            case ShopGUI shopGUI -> {
+                shopGUI.onInventoryClick(event);
+                yield true;
+            }
+            case AdminShopGUI adminShopGUI -> {
+                adminShopGUI.onInventoryClick(event);
+                yield true;
+            }
+            case null, default -> false;
+        };
+
+        if (handled) {
+            event.setCancelled(true);
         }
     }
 
@@ -27,11 +37,13 @@ public class ShopListener implements Listener {
         Player player = event.getPlayer();
         String message = event.getMessage();
 
-        boolean handlePurchase = ShopGUI.handlePurchase(player, message);
-        boolean handleAdminCommand = AdminShopGUI.handleAdminCommand(player, message);
-        boolean handleSale = ShopGUI.handleSale(player, message);
+        boolean handled = switch (player.getOpenInventory().getTopInventory().getHolder()) {
+            case ShopGUI shopGUI -> shopGUI.handleChatInteraction(player, message);
+            case AdminShopGUI adminShopGUI -> adminShopGUI.handleChatInteraction(player, message);
+            case null, default -> false;
+        };
 
-        if (handlePurchase || handleAdminCommand || handleSale) {
+        if (handled) {
             event.setCancelled(true);
         }
     }

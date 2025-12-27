@@ -7,14 +7,21 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
+import java.util.Objects;
+
 public class PlayerMarketListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) return;
 
-        if (event.getInventory().getHolder() instanceof PlayerMarketGUI playerMarketGUI) {
-            playerMarketGUI.onInventoryClick(event);
+        // 使用模式匹配
+        switch (Objects.requireNonNull(event.getInventory().getHolder())) {
+            case PlayerMarketGUI playerMarketGUI -> {
+                playerMarketGUI.onInventoryClick(event);
+                event.setCancelled(true);
+            }
+            default -> {}
         }
     }
 
@@ -23,10 +30,13 @@ public class PlayerMarketListener implements Listener {
         Player player = event.getPlayer();
         String message = event.getMessage();
 
-        boolean handledPurchase = PlayerMarketGUI.handlePlayerMarketPurchase(player, message);
-        boolean handledAddition = PlayerMarketGUI.handlePlayerMarketAddition(player, message);
+        boolean handled = switch (Objects.requireNonNull(player.getOpenInventory().getTopInventory().getHolder())) {
+            case PlayerMarketGUI playerMarketGUI ->
+                    playerMarketGUI.handleChatInteraction(player, message);
+            default -> false;
+        };
 
-        if (handledPurchase || handledAddition) {
+        if (handled) {
             event.setCancelled(true);
         }
     }

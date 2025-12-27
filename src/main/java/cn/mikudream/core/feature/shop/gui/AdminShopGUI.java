@@ -1,8 +1,9 @@
 package cn.mikudream.core.feature.shop.gui;
 
-import cn.mikudream.core.feature.shop.ShopManager;
+import cn.mikudream.core.managers.ShopManager;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -10,155 +11,277 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AdminShopGUI implements InventoryHolder {
     private final Inventory inventory;
     private final Player player;
     private final Map<Integer, ShopManager.ShopItem> itemSlots = new HashMap<>();
-    private static final Map<Player, Material> pendingPriceSet = new HashMap<>();
+
+    // Ê¹ÓÃ¼ÇÂ¼Àà´æ´¢¹ÜÀíÔ±²Ù×÷
+    private record AdminAction(
+            Player player,
+            Material material,
+            ActionType type,
+            long timestamp
+    ) {
+        enum ActionType { ADD, EDIT }
+    }
+
+    private static final Map<UUID, AdminAction> pendingActions = new ConcurrentHashMap<>();
+
+    // Ê¹ÓÃÃÜ·â½Ó¿Ú¶¨ÒåGUI²Ù×÷
+    private sealed interface GUIAction {
+        record EditPrice(ShopManager.ShopItem item) implements GUIAction {}
+        record AddItem(ItemStack handItem) implements GUIAction {}
+        record Close() implements GUIAction {}
+    }
 
     public AdminShopGUI(Player player) {
         this.player = player;
-        this.inventory = Bukkit.createInventory(this, 54, ChatColor.RED + "å•†åº—ç®¡ç†");
+        this.inventory = Bukkit.createInventory(this, 54, "¡ì#ffcd1aÉÌ¡ì#ff9846µê¡ì#ff6371¹Ü¡ì#ff2e9dÀí");
         setupItems();
     }
 
     private void setupItems() {
-        // æ·»åŠ ç°æœ‰å•†åº—ç‰©å“
-        int slot = 0;
-        for (ShopManager.ShopItem shopItem : ShopManager.getInstance().getAllShopItems()) {
-            ItemStack item = shopItem.createShopItem();
-            ItemMeta meta = item.getItemMeta();
+        // Ìí¼ÓÏÖÓĞÉÌµêÎïÆ·
+        ShopManager.getInstance().getAllShopItems().stream()
+                .limit(45)
+                .forEachOrdered(shopItem -> {
+                    int slot = itemSlots.size();
+                    inventory.setItem(slot, createShopItemDisplay(shopItem));
+                    itemSlots.put(slot, shopItem);
+                });
 
-            if (meta != null) {
-                meta.setDisplayName(ChatColor.GREEN + shopItem.displayName());
-                meta.setLore(Arrays.asList(
-                        ChatColor.GRAY + "å·¦é”®ç¼–è¾‘ä»·æ ¼",
-                        ChatColor.GOLD + "ä¹°å…¥ä»·: " + ChatColor.WHITE + shopItem.buyPrice(),
-                        ChatColor.GREEN + "å–å‡ºä»·: " + ChatColor.WHITE + shopItem.sellPrice()
-                ));
-                item.setItemMeta(meta);
-            }
+        // Ìí¼Ó¿ØÖÆ°´Å¥
+        inventory.setItem(51, createAddItemButton());
+        inventory.setItem(53, createDoneButton());
+    }
 
-            inventory.setItem(slot, item);
-            itemSlots.put(slot, shopItem);
-            slot++;
-        }
+    private ItemStack createShopItemDisplay(ShopManager.ShopItem shopItem) {
+        ItemStack item = shopItem.createShopItem();
+        ItemMeta meta = item.getItemMeta();
 
-        // æ·»åŠ æ·»åŠ ç‰©å“æŒ‰é’®
-        ItemStack addItem = new ItemStack(Material.ANVIL);
-        ItemMeta addMeta = addItem.getItemMeta();
-        if (addMeta != null) {
-            addMeta.setDisplayName(ChatColor.GREEN + "æ·»åŠ æ–°ç‰©å“");
-            addMeta.setLore(Arrays.asList(
-                    ChatColor.GRAY + "æ‰‹æŒç‰©å“ç‚¹å‡»æ­¤æŒ‰é’®",
-                    ChatColor.GRAY + "æ·»åŠ æ–°å•†å“åˆ°å•†åº—"
+        if (meta != null) {
+            meta.displayName(Component.text(shopItem.displayName())
+                    .color(NamedTextColor.GREEN));
+
+            meta.lore(List.of(
+                    Component.text("×ó¼ü±à¼­¼Û¸ñ").color(NamedTextColor.GRAY),
+                    Component.text("ÂòÈë¼Û: ")
+                            .append(Component.text(shopItem.buyPrice())
+                                    .color(NamedTextColor.WHITE))
+                            .color(NamedTextColor.GOLD),
+                    Component.text("Âô³ö¼Û: ")
+                            .append(Component.text(shopItem.sellPrice())
+                                    .color(NamedTextColor.WHITE))
+                            .color(NamedTextColor.GREEN)
             ));
-            addItem.setItemMeta(addMeta);
-        }
-        inventory.setItem(51, addItem);
 
-        // æ·»åŠ å®ŒæˆæŒ‰é’®
-        ItemStack doneItem = new ItemStack(Material.BARRIER);
-        ItemMeta doneMeta = doneItem.getItemMeta();
-        if (doneMeta != null) {
-            doneMeta.setDisplayName(ChatColor.RED + "å®Œæˆ");
-            doneItem.setItemMeta(doneMeta);
+            item.setItemMeta(meta);
         }
-        inventory.setItem(53, doneItem);
+
+        return item;
+    }
+
+    private ItemStack createAddItemButton() {
+        ItemStack addItem = new ItemStack(Material.ANVIL);
+        ItemMeta meta = addItem.getItemMeta();
+
+        if (meta != null) {
+            meta.displayName(Component.text("Ìí¼ÓĞÂÎïÆ·")
+                    .color(NamedTextColor.GREEN));
+
+            meta.lore(List.of(
+                    Component.text("ÊÖ³ÖÎïÆ·µã»÷´Ë°´Å¥").color(NamedTextColor.GRAY),
+                    Component.text("Ìí¼ÓĞÂÉÌÆ·µ½ÉÌµê").color(NamedTextColor.GRAY)
+            ));
+
+            addItem.setItemMeta(meta);
+        }
+
+        return addItem;
+    }
+
+    private ItemStack createDoneButton() {
+        ItemStack doneItem = new ItemStack(Material.BARRIER);
+        ItemMeta meta = doneItem.getItemMeta();
+
+        if (meta != null) {
+            meta.displayName(Component.text("Íê³É")
+                    .color(NamedTextColor.RED));
+
+            doneItem.setItemMeta(meta);
+        }
+
+        return doneItem;
     }
 
     @Override
-    public Inventory getInventory() {
+    public @NotNull Inventory getInventory() {
         return inventory;
     }
 
     public void onInventoryClick(InventoryClickEvent event) {
         if (event.getInventory().getHolder() != this) return;
         event.setCancelled(true);
+
         int slot = event.getRawSlot();
         if (slot < 0 || slot >= inventory.getSize()) return;
-        if (slot == 51) {
-            ItemStack handItem = player.getInventory().getItemInMainHand();
-            if (handItem.getType() == Material.AIR) {
-                player.sendMessage(ChatColor.RED + "è¯·æ‰‹æŒç‰©å“ç‚¹å‡»æ·»åŠ æŒ‰é’®");
-                return;
-            }
 
-            Material material = handItem.getType();
-            if (ShopManager.getShopItem(material) != null) {
-                player.sendMessage(ChatColor.RED + "è¯¥ç‰©å“å·²åœ¨å•†åº—ä¸­å­˜åœ¨");
-                return;
-            }
+        GUIAction action = switch (slot) {
+            case 51 -> handleAddItemClick();
+            case 53 -> new GUIAction.Close();
+            default -> handleItemSlotClick(slot);
+        };
 
-            pendingPriceSet.put(player, material);
-            player.closeInventory();
-            player.sendMessage(ChatColor.GREEN + "è¯·è¾“å…¥è¯¥ç‰©å“çš„ä¹°å…¥ä»·å’Œå–å‡ºä»·ï¼Œæ ¼å¼: <ä¹°å…¥ä»·> <å–å‡ºä»·>");
-            player.sendMessage(ChatColor.GRAY + "ä¾‹å¦‚: 100 80");
+        processAction(action);
+    }
+
+    private GUIAction handleAddItemClick() {
+        ItemStack handItem = player.getInventory().getItemInMainHand();
+        if (handItem.getType() == Material.AIR) {
+            player.sendMessage(Component.text("ÇëÊÖ³ÖÎïÆ·µã»÷Ìí¼Ó°´Å¥").color(NamedTextColor.RED));
+            return null;
         }
-        else if (slot == 53) { // å®ŒæˆæŒ‰é’®
-            player.closeInventory();
+
+        Material material = handItem.getType();
+        if (ShopManager.getShopItem(material).isPresent()) {
+            player.sendMessage(Component.text("¸ÃÎïÆ·ÒÑÔÚÉÌµêÖĞ´æÔÚ").color(NamedTextColor.RED));
+            return null;
         }
-        else {
-            ItemStack handItem = player.getInventory().getItemInMainHand();
-            ShopManager.ShopItem shopItem = itemSlots.get(slot);
-            if (shopItem != null) {
-                pendingPriceSet.put(player, shopItem.material());
+
+        return new GUIAction.AddItem(handItem);
+    }
+
+    private GUIAction handleItemSlotClick(int slot) {
+        ShopManager.ShopItem shopItem = itemSlots.get(slot);
+        if (shopItem != null) {
+            return new GUIAction.EditPrice(shopItem);
+        }
+        return null;
+    }
+
+    private void processAction(GUIAction action) {
+        if (action == null) return;
+
+        // Ê¹ÓÃÄ£Ê½Æ¥Åä´¦Àí²»Í¬ÀàĞÍµÄ¶¯×÷
+        switch (action) {
+            case GUIAction.EditPrice editPrice -> {
+                pendingActions.put(player.getUniqueId(),
+                        new AdminAction(player, editPrice.item().material(),
+                                AdminAction.ActionType.EDIT, System.currentTimeMillis()));
                 player.closeInventory();
-                player.sendMessage(ChatColor.GREEN + "è¯·è¾“å…¥ " + shopItem.getDisplayName(handItem) +
-
-                        " çš„æ–°ä»·æ ¼ï¼Œæ ¼å¼: <ä¹°å…¥ä»·> <å–å‡ºä»·>");
-                player.sendMessage(ChatColor.GRAY + "ä¾‹å¦‚: 120 90");
+                player.sendMessage(Component.text()
+                        .append(Component.text("ÇëÊäÈë "))
+                        .append(Component.text(editPrice.item().displayName())
+                                .color(NamedTextColor.YELLOW))
+                        .append(Component.text(" µÄĞÂ¼Û¸ñ£¬¸ñÊ½: <ÂòÈë¼Û> <Âô³ö¼Û>"))
+                        .color(NamedTextColor.GREEN)
+                        .build());
+                player.sendMessage(Component.text("ÀıÈç: 120 90")
+                        .color(NamedTextColor.GRAY));
             }
+            case GUIAction.AddItem addItem -> {
+                pendingActions.put(player.getUniqueId(),
+                        new AdminAction(player, addItem.handItem().getType(),
+                                AdminAction.ActionType.ADD, System.currentTimeMillis()));
+                player.closeInventory();
+                player.sendMessage(Component.text()
+                        .append(Component.text("ÇëÊäÈë¸ÃÎïÆ·µÄÂòÈë¼ÛºÍÂô³ö¼Û£¬¸ñÊ½: <ÂòÈë¼Û> <Âô³ö¼Û>")
+                                .color(NamedTextColor.GREEN))
+                        .build());
+                player.sendMessage(Component.text("ÀıÈç: 100 80")
+                        .color(NamedTextColor.GRAY));
+            }
+            case GUIAction.Close ignored -> player.closeInventory();
         }
     }
 
-    public static boolean handleAdminCommand(Player player, String message) {
-        if (pendingPriceSet.containsKey(player)) {
-            Material material = pendingPriceSet.get(player);
+    public boolean handleChatInteraction(Player player, String message) {
+        AdminAction action = pendingActions.get(player.getUniqueId());
+        if (action == null) return false;
 
-            String[] parts = message.split(" ");
-            if (parts.length != 2) {
-                player.sendMessage(ChatColor.RED + "æ ¼å¼é”™è¯¯! è¯·è¾“å…¥: <ä¹°å…¥ä»·> <å–å‡ºä»·>");
-                return true;
-            }
-
-            try {
-                int buyPrice = Integer.parseInt(parts[0]);
-                int sellPrice = Integer.parseInt(parts[1]);
-
-                if (buyPrice <= 0 || sellPrice <= 0) {
-                    player.sendMessage(ChatColor.RED + "ä»·æ ¼å¿…é¡»å¤§äº0");
-                    return true;
-                }
-
-                if (sellPrice > buyPrice) {
-                    player.sendMessage(ChatColor.RED + "å–å‡ºä»·ä¸èƒ½é«˜äºä¹°å…¥ä»·");
-                    return true;
-                }
-
-                // æ·»åŠ æˆ–æ›´æ–°å•†å“
-                ShopManager.getInstance().addShopItem(
-                        material,
-                        sellPrice,
-                        buyPrice,
-                        material.name()
-                );
-
-                player.sendMessage(ChatColor.GREEN + "æˆåŠŸè®¾ç½® " + material.name() +
-                        " ä»·æ ¼: ä¹°å…¥=" + buyPrice + ", å–å‡º=" + sellPrice);
-
-                pendingPriceSet.remove(player);
-                return true;
-            } catch (NumberFormatException e) {
-                player.sendMessage(ChatColor.RED + "è¯·è¾“å…¥æœ‰æ•ˆçš„æ•°å­—ä»·æ ¼");
-                return true;
-            }
+        // ÇåÀí¹ıÆÚ²Ù×÷
+        if (System.currentTimeMillis() - action.timestamp() > 30000) {
+            pendingActions.remove(player.getUniqueId());
+            return false;
         }
-        return false;
+
+        String[] parts = message.split(" ");
+        if (parts.length != 2) {
+            player.sendMessage(Component.text("¸ñÊ½´íÎó! ÇëÊäÈë: <ÂòÈë¼Û> <Âô³ö¼Û>")
+                    .color(NamedTextColor.RED));
+            return true;
+        }
+
+        try {
+            int buyPrice = Integer.parseInt(parts[0]);
+            int sellPrice = Integer.parseInt(parts[1]);
+
+            if (buyPrice <= 0 || sellPrice <= 0) {
+                player.sendMessage(Component.text("¼Û¸ñ±ØĞë´óÓÚ0")
+                        .color(NamedTextColor.RED));
+                return true;
+            }
+
+            if (sellPrice > buyPrice) {
+                player.sendMessage(Component.text("Âô³ö¼Û²»ÄÜ¸ßÓÚÂòÈë¼Û")
+                        .color(NamedTextColor.RED));
+                return true;
+            }
+
+            // Ìí¼Ó»ò¸üĞÂÉÌÆ·
+            String displayName = getDisplayName(action.material());
+            ShopManager.getInstance().addShopItem(
+                    action.material(),
+                    sellPrice,
+                    buyPrice,
+                    displayName
+            );
+
+            player.sendMessage(Component.text()
+                    .append(Component.text("³É¹¦ÉèÖÃ ")
+                            .color(NamedTextColor.GREEN))
+                    .append(Component.text(action.material().name())
+                            .color(NamedTextColor.YELLOW))
+                    .append(Component.text(" ¼Û¸ñ: ÂòÈë=")
+                            .color(NamedTextColor.GREEN))
+                    .append(Component.text(buyPrice)
+                            .color(NamedTextColor.WHITE))
+                    .append(Component.text(", Âô³ö=")
+                            .color(NamedTextColor.GREEN))
+                    .append(Component.text(sellPrice)
+                            .color(NamedTextColor.WHITE))
+                    .build());
+
+            pendingActions.remove(player.getUniqueId());
+            return true;
+        } catch (NumberFormatException e) {
+            player.sendMessage(Component.text("ÇëÊäÈëÓĞĞ§µÄÊı×Ö¼Û¸ñ")
+                    .color(NamedTextColor.RED));
+            return true;
+        }
+    }
+
+    private String getDisplayName(Material material) {
+        return Arrays.stream(material.name().toLowerCase().split("_"))
+                .map(word -> !word.isEmpty()
+                        ? Character.toUpperCase(word.charAt(0)) + word.substring(1)
+                        : "")
+                .collect(java.util.stream.Collectors.joining(" "));
+    }
+
+    // Ìí¼ÓËùĞèÒÀÀµ
+    static {
+        try {
+            Class.forName("net.kyori.adventure.text.Component");
+            Class.forName("net.kyori.adventure.text.format.NamedTextColor");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Adventure API not found", e);
+        }
     }
 }

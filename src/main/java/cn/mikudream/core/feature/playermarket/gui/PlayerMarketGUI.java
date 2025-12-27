@@ -1,10 +1,11 @@
 package cn.mikudream.core.feature.playermarket.gui;
 
 import cn.mikudream.core.MikuDream;
-import cn.mikudream.core.feature.coin.CoinsManager;
-import cn.mikudream.core.feature.playermarket.PlayerMarketManager;
+import cn.mikudream.core.managers.CoinsManager;
+import cn.mikudream.core.managers.PlayerMarketManager.MarketItem;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -16,106 +17,169 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class PlayerMarketGUI implements InventoryHolder {
     private final Inventory inventory;
     private final Player player;
     private final int page;
     private final Map<Integer, UUID> itemSlots = new HashMap<>();
-    private static final Map<UUID, UUID> pendingPurchases = new HashMap<>();
-    private static final Map<UUID, ItemStack> pendingAdditions = new HashMap<>();
 
+    // Ê¹ÓÃ¼ÇÂ¼Àà´æ´¢´ı´¦Àí²Ù×÷
+    private record PendingAction(
+            UUID playerId,
+            ActionType type,
+            UUID itemId,
+            ItemStack item,
+            long timestamp
+    ) {
+        enum ActionType { PURCHASE, ADDITION }
+    }
+
+    private record TransactionResult(
+            boolean success,
+            String message,
+            int newAmount
+    ) {}
+
+    // Ê¹ÓÃĞéÄâÏß³ÌÖ´ĞĞÒì²½²Ù×÷
+    private static final ExecutorService asyncExecutor = Executors.newThreadPerTaskExecutor(
+            Thread.ofVirtual().name("market-gui-", 0).factory()
+    );
+
+    private static final Map<UUID, PendingAction> pendingActions = new ConcurrentHashMap<>();
     private static final int ITEMS_PER_PAGE = 45;
 
     public PlayerMarketGUI(Player player, int page) {
         this.player = player;
         this.page = page;
-        this.inventory = Bukkit.createInventory(this, 54, ChatColor.GOLD + "ç©å®¶å¸‚åœº - ç¬¬" + (page+1) + "é¡µ");
+        this.inventory = Bukkit.createInventory(this, 54,
+                "¡ì#ffcd1aÍæ¡ì#ffb62d¼Ò¡ì#ffa03fÊĞ¡ì#ff8952³¡¡ì#ff7265 ¡ì#ff5b78-¡ì#ff458a ¡ì#ff2e9dµÚ" + (page + 1) + "¡ì#ff2e9dÒ³");
         setupItems();
     }
 
     private void setupItems() {
-        List<PlayerMarketManager.MarketItem> allItems = PlayerMarketManager.getInstance().getAllMarketItems();
+        List<MarketItem> allItems = MikuDream.getInstance().getPlayerMarketManager().getAllMarketItems();
 
-        // åˆ†é¡µé€»è¾‘
+        // ·ÖÒ³Âß¼­
         int startIndex = page * ITEMS_PER_PAGE;
         int endIndex = Math.min(startIndex + ITEMS_PER_PAGE, allItems.size());
 
-        // æ·»åŠ å¸‚åœºç‰©å“
+        // Ìí¼ÓÊĞ³¡ÎïÆ·
         for (int i = startIndex; i < endIndex; i++) {
-            PlayerMarketManager.MarketItem marketItem = allItems.get(i);
-            ItemStack displayItem = marketItem.getSampleItem().clone();
-            ItemMeta meta = displayItem.getItemMeta();
-
-            if (meta != null) {
-                meta.setDisplayName(ChatColor.GREEN + marketItem.getDisplayName());
-                displayItem.setItemMeta(meta);
-
-                String sellerName = "æœªçŸ¥å–å®¶";
-                Player seller = Bukkit.getPlayer(marketItem.getSellerId()); // ä½¿ç”¨ getSellerId()
-                if (seller != null) {
-                    sellerName = seller.getName();
-                } else {
-                    OfflinePlayer offlineSeller = Bukkit.getOfflinePlayer(marketItem.getSellerId());
-                    if (offlineSeller.hasPlayedBefore()) {
-                        sellerName = offlineSeller.getName();
-                    }
-                }
-
-                meta.setLore(Arrays.asList(
-                        ChatColor.GRAY + "å–å®¶: " + sellerName,
-                        ChatColor.GOLD + "å•ä»·: " + ChatColor.WHITE + marketItem.getPrice() + " ç¡¬å¸",
-                        ChatColor.YELLOW + "æ•°é‡: " + ChatColor.WHITE + marketItem.getAmount(),
-                        "",
-                        ChatColor.GREEN + "å·¦é”®è´­ä¹°"
-                ));
-
-                displayItem.setItemMeta(meta);
-            }
-
-            inventory.setItem(i - startIndex, displayItem);
-            itemSlots.put(i - startIndex, marketItem.getItemid());
+            MarketItem marketItem = allItems.get(i);
+            int slot = i - startIndex;
+            inventory.setItem(slot, createMarketItemDisplay(marketItem));
+            itemSlots.put(slot, marketItem.itemId());
         }
 
-        // æ·»åŠ ä¸Šä¸€é¡µæŒ‰é’®
+        // Ìí¼ÓÉÏÒ»Ò³°´Å¥
         if (page > 0) {
-            ItemStack prevPage = new ItemStack(Material.ARROW);
-            ItemMeta prevMeta = prevPage.getItemMeta();
-            prevMeta.setDisplayName(ChatColor.YELLOW + "ä¸Šä¸€é¡µ");
-            prevPage.setItemMeta(prevMeta);
-            inventory.setItem(45, prevPage);
+            inventory.setItem(45, createNavigationButton("ÉÏÒ»Ò³"));
         }
 
-        // æ·»åŠ ä¸‹ä¸€é¡µæŒ‰é’®
+        // Ìí¼ÓÏÂÒ»Ò³°´Å¥
         if ((page + 1) * ITEMS_PER_PAGE < allItems.size()) {
-            ItemStack nextPage = new ItemStack(Material.ARROW);
-            ItemMeta nextMeta = nextPage.getItemMeta();
-            nextMeta.setDisplayName(ChatColor.YELLOW + "ä¸‹ä¸€é¡µ");
-            nextPage.setItemMeta(nextMeta);
-            inventory.setItem(53, nextPage);
+            inventory.setItem(53, createNavigationButton("ÏÂÒ»Ò³"));
         }
 
-        // æ·»åŠ ä¸Šæ¶ç‰©å“æŒ‰é’®
-        ItemStack addItem = new ItemStack(Material.EMERALD);
-        ItemMeta addMeta = addItem.getItemMeta();
-        addMeta.setDisplayName(ChatColor.GREEN + "ä¸Šæ¶ç‰©å“");
-        addMeta.setLore(Collections.singletonList(ChatColor.GRAY + "ç‚¹å‡»ä¸Šæ¶æ‰‹ä¸­ç‰©å“"));
-        addItem.setItemMeta(addMeta);
-        inventory.setItem(49, addItem);
+        // Ìí¼ÓÉÏ¼ÜÎïÆ·°´Å¥
+        inventory.setItem(49, createAddItemButton());
 
-        // æ·»åŠ ä¿¡æ¯é¡¹
+        // Ìí¼ÓĞÅÏ¢Ïî
+        inventory.setItem(48, createInfoItem());
+    }
+
+    private ItemStack createMarketItemDisplay(MarketItem marketItem) {
+        ItemStack displayItem = marketItem.sampleItem().clone();
+        ItemMeta meta = displayItem.getItemMeta();
+
+        if (meta != null) {
+            meta.displayName(Component.text(marketItem.displayName())
+                    .color(NamedTextColor.GREEN));
+
+            String sellerName = getSellerName(marketItem.sellerId());
+
+            meta.lore(List.of(
+                    Component.text("Âô¼Ò: " + sellerName).color(NamedTextColor.GRAY),
+                    Component.text("µ¥¼Û: ")
+                            .append(Component.text(marketItem.price() + " Ó²±Ò")
+                                    .color(NamedTextColor.WHITE))
+                            .color(NamedTextColor.GOLD),
+                    Component.text("ÊıÁ¿: ")
+                            .append(Component.text(marketItem.amount())
+                                    .color(NamedTextColor.WHITE))
+                            .color(NamedTextColor.YELLOW),
+                    Component.empty(),
+                    Component.text("×ó¼ü¹ºÂò").color(NamedTextColor.GREEN)
+            ));
+
+            displayItem.setItemMeta(meta);
+        }
+
+        return displayItem;
+    }
+
+    private String getSellerName(UUID sellerId) {
+        return Optional.ofNullable(Bukkit.getPlayer(sellerId))
+                .map(Player::getName)
+                .or(() -> Optional.of(Bukkit.getOfflinePlayer(sellerId))
+                        .filter(OfflinePlayer::hasPlayedBefore)
+                        .map(OfflinePlayer::getName))
+                .orElse("Î´ÖªÂô¼Ò");
+    }
+
+    private ItemStack createNavigationButton(String name) {
+        ItemStack button = new ItemStack(Material.ARROW);
+        ItemMeta meta = button.getItemMeta();
+
+        if (meta != null) {
+            meta.displayName(Component.text(name).color(NamedTextColor.YELLOW));
+            button.setItemMeta(meta);
+        }
+
+        return button;
+    }
+
+    private ItemStack createAddItemButton() {
+        ItemStack addItem = new ItemStack(Material.EMERALD);
+        ItemMeta meta = addItem.getItemMeta();
+
+        if (meta != null) {
+            meta.displayName(Component.text("ÉÏ¼ÜÎïÆ·").color(NamedTextColor.GREEN));
+            meta.lore(List.of(
+                    Component.text("µã»÷ÉÏ¼ÜÊÖÖĞÎïÆ·").color(NamedTextColor.GRAY)
+            ));
+            addItem.setItemMeta(meta);
+        }
+
+        return addItem;
+    }
+
+    private ItemStack createInfoItem() {
         ItemStack infoItem = new ItemStack(Material.BOOK);
-        ItemMeta infoMeta = infoItem.getItemMeta();
-        infoMeta.setDisplayName(ChatColor.YELLOW + "ç©å®¶å¸‚åœºå¸®åŠ©");
-        infoMeta.setLore(Arrays.asList(
-                ChatColor.GRAY + "å·¦é”®ç‚¹å‡»ç‰©å“è´­ä¹°",
-                ChatColor.GRAY + "ç‚¹å‡»ä¸Šæ¶ç‰©å“æŒ‰é’®å‡ºå”®ç‰©å“",
-                "",
-                ChatColor.GOLD + "ä½ çš„ç¡¬å¸: " + ChatColor.WHITE +
-                        new CoinsManager(MikuDream.getInstance()).getCoins(player.getUniqueId())
-        ));
-        infoItem.setItemMeta(infoMeta);
-        inventory.setItem(48, infoItem);
+        ItemMeta meta = infoItem.getItemMeta();
+
+        if (meta != null) {
+            meta.displayName(Component.text("Íæ¼ÒÊĞ³¡°ïÖú").color(NamedTextColor.YELLOW));
+
+            long playerCoins = CoinsManager.getInstance().getCoins(player.getUniqueId());
+            meta.lore(List.of(
+                    Component.text("×ó¼üµã»÷ÎïÆ·¹ºÂò").color(NamedTextColor.GRAY),
+                    Component.text("µã»÷ÉÏ¼ÜÎïÆ·°´Å¥³öÊÛÎïÆ·").color(NamedTextColor.GRAY),
+                    Component.empty(),
+                    Component.text("ÄãµÄÓ²±Ò: ")
+                            .append(Component.text(playerCoins)
+                                    .color(NamedTextColor.WHITE))
+                            .color(NamedTextColor.GOLD)
+            ));
+
+            infoItem.setItemMeta(meta);
+        }
+
+        return infoItem;
     }
 
     @Override
@@ -130,186 +194,251 @@ public class PlayerMarketGUI implements InventoryHolder {
         int slot = event.getRawSlot();
         if (slot < 0 || slot >= inventory.getSize()) return;
 
-        // ç¿»é¡µå¤„ç†
-        if (slot == 45) { // ä¸Šä¸€é¡µ
-            player.closeInventory();
-            player.openInventory(new PlayerMarketGUI(player, page - 1).getInventory());
-            return;
-        } else if (slot == 53) { // ä¸‹ä¸€é¡µ
-            player.closeInventory();
-            player.openInventory(new PlayerMarketGUI(player, page + 1).getInventory());
-            return;
-        }
-
-        // ä¸Šæ¶ç‰©å“æŒ‰é’®
-        if (slot == 49) {
-            if (handleAddItem((Player) event.getWhoClicked())) {
-                event.setCancelled(true);
-                return;
-            }
-            return;
-        }
-
-        UUID itemId = itemSlots.get(slot);
-        if (itemId != null) {
-            PlayerMarketManager.MarketItem marketItem = PlayerMarketManager.getInstance().getMarketItem(itemId);
-            if (marketItem != null) {
-                pendingPurchases.put(player.getUniqueId(), itemId);
-                player.closeInventory();
-                player.sendMessage(ChatColor.GOLD + "è¯·è¾“å…¥è´­ä¹°æ•°é‡ (æœ€å¤§å¯ä¹°: " + marketItem.getAmount() +
-                        ", å•ä»·: " + marketItem.getPrice() + " ç¡¬å¸)");
-            }
+        // Ê¹ÓÃÄ£Ê½Æ¥Åä´¦Àí²»Í¬µÄ²ÛÎ»
+        switch (slot) {
+            case 45 -> navigateToPage(page - 1);  // ÉÏÒ»Ò³
+            case 53 -> navigateToPage(page + 1);  // ÏÂÒ»Ò³
+            case 49 -> handleAddItemClick(player); // ÉÏ¼ÜÎïÆ·
+            default -> handleItemClick(slot);      // ÎïÆ·²ÛÎ»
         }
     }
 
-    public static boolean handleAddItem(Player player) {
+    private void navigateToPage(int newPage) {
+        player.closeInventory();
+        player.openInventory(new PlayerMarketGUI(player, newPage).getInventory());
+    }
+
+    private void handleAddItemClick(Player player) {
         ItemStack itemInHand = player.getInventory().getItemInMainHand();
         if (itemInHand.getType() == Material.AIR) {
-            player.sendMessage(ChatColor.RED + "è¯·æ‰‹æŒè¦ä¸Šæ¶çš„ç‰©å“");
-            return true;
+            player.sendMessage(Component.text("ÇëÊÖ³ÖÒªÉÏ¼ÜµÄÎïÆ·").color(NamedTextColor.RED));
+            return;
         }
 
-        pendingAdditions.put(player.getUniqueId(), itemInHand.clone());
+        pendingActions.put(player.getUniqueId(),
+                new PendingAction(
+                        player.getUniqueId(),
+                        PendingAction.ActionType.ADDITION,
+                        null,
+                        itemInHand.clone(),
+                        System.currentTimeMillis()
+                ));
+
         player.closeInventory();
-        player.sendMessage(ChatColor.GREEN + "è¯·è¾“å…¥ä¸Šæ¶æ•°é‡å’Œä»·æ ¼ï¼Œæ ¼å¼: <æ•°é‡> <å•ä»·>");
-        player.sendMessage(ChatColor.GRAY + "ä¾‹å¦‚: 64 10");
-        return false;
+        player.sendMessage(Component.text("ÇëÊäÈëÉÏ¼ÜÊıÁ¿ºÍ¼Û¸ñ£¬¸ñÊ½: <ÊıÁ¿> <µ¥¼Û>")
+                .color(NamedTextColor.GREEN));
+        player.sendMessage(Component.text("ÀıÈç: 64 10").color(NamedTextColor.GRAY));
     }
 
-    public static boolean handlePlayerMarketPurchase(Player player, String message) {
-        if (pendingPurchases.containsKey(player.getUniqueId())) {
-            UUID itemId = pendingPurchases.get(player.getUniqueId());
-            PlayerMarketManager.MarketItem marketItem = PlayerMarketManager.getInstance().getMarketItem(itemId);
+    private void handleItemClick(int slot) {
+        UUID itemId = itemSlots.get(slot);
+        if (itemId != null) {
+            MikuDream.getInstance().getPlayerMarketManager().getMarketItem(itemId).ifPresent(marketItem -> {
+                pendingActions.put(player.getUniqueId(),
+                        new PendingAction(
+                                player.getUniqueId(),
+                                PendingAction.ActionType.PURCHASE,
+                                itemId,
+                                null,
+                                System.currentTimeMillis()
+                        ));
 
-            if (marketItem == null) {
-                player.sendMessage(ChatColor.RED + "è¯¥å•†å“å·²ä¸å­˜åœ¨æˆ–å·²å”®å®Œ");
-                pendingPurchases.remove(player.getUniqueId());
-                return true;
-            }
+                player.closeInventory();
+                player.sendMessage(Component.text()
+                        .append(Component.text("ÇëÊäÈë¹ºÂòÊıÁ¿ (×î´ó¿ÉÂò: ")
+                                .color(NamedTextColor.GOLD))
+                        .append(Component.text(marketItem.amount())
+                                .color(NamedTextColor.WHITE))
+                        .append(Component.text(", µ¥¼Û: ")
+                                .color(NamedTextColor.GOLD))
+                        .append(Component.text(marketItem.price() + " Ó²±Ò")
+                                .color(NamedTextColor.WHITE))
+                        .append(Component.text(")"))
+                        .build());
+            });
+        }
+    }
 
+    public boolean handleChatInteraction(Player player, String message) {
+        PendingAction action = pendingActions.get(player.getUniqueId());
+        if (action == null) return false;
+
+        // ÇåÀí¹ıÆÚ²Ù×÷
+        if (System.currentTimeMillis() - action.timestamp() > 30000) {
+            pendingActions.remove(player.getUniqueId());
+            return false;
+        }
+
+        // Òì²½´¦Àí²Ù×÷
+        asyncExecutor.submit(() -> processAction(player, action, message));
+        return true;
+    }
+
+    private void processAction(Player player, PendingAction action, String message) {
+        switch (action.type()) {
+            case PURCHASE -> processPurchase(player, action.itemId(), message);
+            case ADDITION -> processAddition(player, action.item(), message);
+        }
+
+        pendingActions.remove(player.getUniqueId());
+    }
+
+    private void processPurchase(Player player, UUID itemId, String message) {
+        MikuDream.getInstance().getPlayerMarketManager().getMarketItem(itemId).ifPresentOrElse(marketItem -> {
             try {
                 int amount = Integer.parseInt(message);
-                if (amount <= 0) {
-                    player.sendMessage(ChatColor.RED + "æ•°é‡å¿…é¡»å¤§äº0");
-                    return true;
+
+                TransactionResult result = validatePurchase(player, marketItem, amount);
+                if (!result.success()) {
+                    player.sendMessage(Component.text(result.message()).color(NamedTextColor.RED));
+                    return;
                 }
 
-                if (amount > marketItem.getAmount()) {
-                    player.sendMessage(ChatColor.RED + "è´­ä¹°æ•°é‡è¶…è¿‡åº“å­˜! æœ€å¤§å¯ä¹°: " + marketItem.getAmount());
-                    return true;
-                }
+                executePurchase(player, marketItem, amount);
 
-                // è®¡ç®—æ€»ä»·
-                int totalCost = marketItem.getPrice() * amount;
-                CoinsManager coinsManager = new CoinsManager(MikuDream.getInstance());
-                int playerCoins = coinsManager.getCoins(player.getUniqueId());
-
-                if (playerCoins < totalCost) {
-                    player.sendMessage(ChatColor.RED + "ç¡¬å¸ä¸è¶³! éœ€è¦ " + totalCost +
-                            ", å½“å‰æœ‰ " + playerCoins);
-                    pendingPurchases.remove(player.getUniqueId());
-                    return true;
-                }
-
-                // æ£€æŸ¥èƒŒåŒ…ç©ºé—´
-                if (player.getInventory().firstEmpty() == -1) {
-                    player.sendMessage(ChatColor.RED + "èƒŒåŒ…å·²æ»¡ï¼Œæ— æ³•è´­ä¹°ç‰©å“");
-                    pendingPurchases.remove(player.getUniqueId());
-                    return true;
-                }
-
-                coinsManager.removeCoins(player.getUniqueId(), totalCost);
-
-                ItemStack purchasedItem = marketItem.getSampleItem().clone();
-                purchasedItem.setAmount(amount);
-                player.getInventory().addItem(purchasedItem);
-
-                Player seller = Bukkit.getPlayer(marketItem.getItemid());
-                if (seller != null && seller.isOnline()) {
-                    coinsManager.addCoins(seller.getUniqueId(), totalCost);
-                    seller.sendMessage(ChatColor.GREEN + player.getName() + " è´­ä¹°äº†ä½ çš„ " +
-                            marketItem.getDisplayName() + " x" + amount +
-                            "ï¼Œè·å¾— " + totalCost + " ç¡¬å¸");
-                } else {
-                    coinsManager.addCoins(marketItem.getItemid(), totalCost);
-                }
-
-                int remaining = marketItem.getAmount() - amount;
-                if (remaining <= 0) {
-                    PlayerMarketManager.getInstance().removeMarketItem(marketItem.getSellerId(), marketItem.getItemid());
-                } else {
-                    marketItem.setAmount(remaining);
-                    PlayerMarketManager.getInstance().updateMarketItem(marketItem.getSellerId(), marketItem.getItemid(), remaining);
-                }
-
-                player.sendMessage(String.format(ChatColor.GREEN + "æˆåŠŸè´­ä¹° %d ä¸ª %sï¼ŒèŠ±è´¹ %d ç¡¬å¸",
-                        amount, marketItem.getDisplayName(), totalCost));
-
-                pendingPurchases.remove(player.getUniqueId());
-                return true;
             } catch (NumberFormatException e) {
-                player.sendMessage(ChatColor.RED + "è¯·è¾“å…¥æœ‰æ•ˆçš„æ•°å­—æ•°é‡");
-                return true;
+                player.sendMessage(Component.text("ÇëÊäÈëÓĞĞ§µÄÊı×ÖÊıÁ¿").color(NamedTextColor.RED));
             }
-        }
-        return false;
+        }, () -> player.sendMessage(Component.text("¸ÃÉÌÆ·ÒÑ²»´æÔÚ»òÒÑÊÛÍê").color(NamedTextColor.RED)));
     }
 
-    public static boolean handlePlayerMarketAddition(Player player, String message) {
-        if (pendingAdditions.containsKey(player.getUniqueId())) {
-            ItemStack itemToSell = pendingAdditions.get(player.getUniqueId());
-
-            String[] parts = message.split(" ");
-            if (parts.length != 2) {
-                player.sendMessage(ChatColor.RED + "æ ¼å¼é”™è¯¯! è¯·è¾“å…¥: <æ•°é‡> <å•ä»·>");
-                return true;
-            }
-
-            try {
-                int amount = Integer.parseInt(parts[0]);
-                int price = Integer.parseInt(parts[1]);
-
-                if (amount <= 0 || price <= 0) {
-                    player.sendMessage(ChatColor.RED + "æ•°é‡å’Œä»·æ ¼å¿…é¡»å¤§äº0");
-                    return true;
-                }
-
-                // æ£€æŸ¥ç©å®¶æ˜¯å¦æœ‰è¶³å¤Ÿçš„ç‰©å“
-                int available = countItemsInInventory(player, itemToSell.getType());
-                if (available < amount) {
-                    player.sendMessage(ChatColor.RED + "ç‰©å“æ•°é‡ä¸è¶³! èƒŒåŒ…ä¸­æœ‰ " + available + " ä¸ª");
-                    pendingAdditions.remove(player.getUniqueId());
-                    return true;
-                }
-
-                // ç§»é™¤ç‰©å“
-                removeItemsFromInventory(player, itemToSell.getType(), amount);
-
-                // æ·»åŠ åˆ°å¸‚åœº
-                PlayerMarketManager.getInstance().addMarketItem(player, itemToSell, amount, price);
-
-                player.sendMessage(ChatColor.GREEN + "æˆåŠŸä¸Šæ¶ " + amount + " ä¸ª " +
-                        PlayerMarketManager.getInstance().formatMaterialName(itemToSell.getType()) +
-                        "ï¼Œå•ä»·: " + price + " ç¡¬å¸");
-
-                pendingAdditions.remove(player.getUniqueId());
-                return true;
-            } catch (NumberFormatException e) {
-                player.sendMessage(ChatColor.RED + "è¯·è¾“å…¥æœ‰æ•ˆçš„æ•°å­—");
-                return true;
-            }
+    private TransactionResult validatePurchase(Player player, MarketItem marketItem, int amount) {
+        if (amount <= 0) {
+            return new TransactionResult(false, "ÊıÁ¿±ØĞë´óÓÚ0", 0);
         }
-        return false;
+
+        if (amount > marketItem.amount()) {
+            return new TransactionResult(false,
+                    "¹ºÂòÊıÁ¿³¬¹ı¿â´æ! ×î´ó¿ÉÂò: " + marketItem.amount(), 0);
+        }
+
+        long totalCost = (long) marketItem.price() * amount;
+        long playerCoins = CoinsManager.getInstance().getCoins(player.getUniqueId());
+
+        if (playerCoins < totalCost) {
+            return new TransactionResult(false,
+                    "Ó²±Ò²»×ã! ĞèÒª " + totalCost + ", µ±Ç°ÓĞ " + playerCoins, 0);
+        }
+
+        if (player.getInventory().firstEmpty() == -1) {
+            return new TransactionResult(false, "±³°üÒÑÂú£¬ÎŞ·¨¹ºÂòÎïÆ·", 0);
+        }
+
+        int remaining = marketItem.amount() - amount;
+        return new TransactionResult(true, "ÑéÖ¤Í¨¹ı", remaining);
+    }
+
+    private void executePurchase(Player player, MarketItem marketItem, int amount) {
+        long totalCost = (long) marketItem.price() * amount;
+
+        // Ö´ĞĞ½»Ò×
+        CoinsManager.getInstance().removeCoins(player.getUniqueId(), totalCost);
+
+        ItemStack purchasedItem = marketItem.sampleItem().clone();
+        purchasedItem.setAmount(amount);
+        player.getInventory().addItem(purchasedItem);
+
+        // ¸øÂô¼Ò¼ÓÇ®
+        CoinsManager.getInstance().addCoins(marketItem.sellerId(), totalCost);
+
+        // Í¨ÖªÂô¼Ò£¨Èç¹ûÔÚÏß£©
+        Optional.ofNullable(Bukkit.getPlayer(marketItem.sellerId()))
+                .ifPresent(seller -> seller.sendMessage(Component.text()
+                        .append(Component.text(player.getName())
+                                .color(NamedTextColor.YELLOW))
+                        .append(Component.text(" ¹ºÂòÁËÄãµÄ ")
+                                .color(NamedTextColor.GREEN))
+                        .append(Component.text(marketItem.displayName())
+                                .color(NamedTextColor.WHITE))
+                        .append(Component.text(" x" + amount)
+                                .color(NamedTextColor.GREEN))
+                        .append(Component.text("£¬»ñµÃ ")
+                                .color(NamedTextColor.GREEN))
+                        .append(Component.text(totalCost + " Ó²±Ò")
+                                .color(NamedTextColor.WHITE))
+                        .build()));
+
+        // ¸üĞÂÊĞ³¡ÎïÆ·
+        int remaining = marketItem.amount() - amount;
+        if (remaining <= 0) {
+            MikuDream.getInstance().getPlayerMarketManager().removeMarketItem(marketItem.sellerId(), marketItem.itemId());
+        } else {
+            MikuDream.getInstance().getPlayerMarketManager().updateMarketItem(marketItem.sellerId(), marketItem.itemId(), remaining);
+        }
+
+        player.sendMessage(Component.text()
+                .append(Component.text("³É¹¦¹ºÂò ")
+                        .color(NamedTextColor.GREEN))
+                .append(Component.text(amount + " ¸ö " + marketItem.displayName())
+                        .color(NamedTextColor.WHITE))
+                .append(Component.text("£¬»¨·Ñ ")
+                        .color(NamedTextColor.GREEN))
+                .append(Component.text(totalCost + " Ó²±Ò")
+                        .color(NamedTextColor.WHITE))
+                .build());
+    }
+
+    private void processAddition(Player player, ItemStack itemToSell, String message) {
+        String[] parts = message.split(" ");
+        if (parts.length != 2) {
+            player.sendMessage(Component.text("¸ñÊ½´íÎó! ÇëÊäÈë: <ÊıÁ¿> <µ¥¼Û>")
+                    .color(NamedTextColor.RED));
+            return;
+        }
+
+        try {
+            int amount = Integer.parseInt(parts[0]);
+            int price = Integer.parseInt(parts[1]);
+
+            if (amount <= 0 || price <= 0) {
+                player.sendMessage(Component.text("ÊıÁ¿ºÍ¼Û¸ñ±ØĞë´óÓÚ0")
+                        .color(NamedTextColor.RED));
+                return;
+            }
+
+            // ¼ì²éÍæ¼ÒÊÇ·ñÓĞ×ã¹»µÄÎïÆ·
+            int available = countItemsInInventory(player, itemToSell.getType());
+            if (available < amount) {
+                player.sendMessage(Component.text()
+                        .append(Component.text("ÎïÆ·ÊıÁ¿²»×ã! ±³°üÖĞÓĞ ")
+                                .color(NamedTextColor.RED))
+                        .append(Component.text(available + " ¸ö")
+                                .color(NamedTextColor.WHITE))
+                        .build());
+                return;
+            }
+
+            // ÒÆ³ıÎïÆ·
+            removeItemsFromInventory(player, itemToSell.getType(), amount);
+
+            // Ìí¼Óµ½ÊĞ³¡
+            MikuDream.getInstance().getPlayerMarketManager().addMarketItem(player, itemToSell, amount, price);
+
+            player.sendMessage(Component.text()
+                    .append(Component.text("³É¹¦ÉÏ¼Ü ")
+                            .color(NamedTextColor.GREEN))
+                    .append(Component.text(amount + " ¸ö ")
+                            .color(NamedTextColor.WHITE))
+                    .append(Component.text(itemToSell.getType().toString())
+                            .color(NamedTextColor.YELLOW))
+                    .append(Component.text("£¬µ¥¼Û: ")
+                            .color(NamedTextColor.GREEN))
+                    .append(Component.text(price + " Ó²±Ò")
+                            .color(NamedTextColor.WHITE))
+                    .build());
+
+        } catch (NumberFormatException e) {
+            player.sendMessage(Component.text("ÇëÊäÈëÓĞĞ§µÄÊı×Ö")
+                    .color(NamedTextColor.RED));
+        }
     }
 
     private static int countItemsInInventory(Player player, Material material) {
-        int count = 0;
-        for (ItemStack item : player.getInventory().getContents()) {
-            if (item != null && item.getType() == material) {
-                count += item.getAmount();
-            }
-        }
-        return count;
+        return Arrays.stream(player.getInventory().getContents())
+                .filter(Objects::nonNull)
+                .filter(item -> item.getType() == material)
+                .mapToInt(ItemStack::getAmount)
+                .sum();
     }
 
     private static void removeItemsFromInventory(Player player, Material material, int amount) {
@@ -323,5 +452,15 @@ public class PlayerMarketGUI implements InventoryHolder {
             }
         }
         player.updateInventory();
+    }
+
+    // Ìí¼ÓËùĞèÒÀÀµ
+    static {
+        try {
+            Class.forName("net.kyori.adventure.text.Component");
+            Class.forName("net.kyori.adventure.text.format.NamedTextColor");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Adventure API not found", e);
+        }
     }
 }

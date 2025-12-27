@@ -1,96 +1,101 @@
-name: MikuDreamCore
-version: '1.2.301'
+name: MikuDream
+version: 25.12.1
 main: cn.mikudream.core.MikuDream
-api-version: '1.21'
-authors: [onea]
-folia-supported: true
-soft-depend: []
-website: https://cysunk.mlzi.top/
+api-version: '1.21.10'
+description: A plugin for MikuDream Server
+
 commands:
-  hub:
-    description: hub
-  skill:
-    description: skill
-  sconfig:
-    description: config
-  sbreakboard:
-    description: off & on the breakboard
-  coin:
-    description: coin
-  sv:
-    description: sv
-  srf:
-    description: srf
-  svold:
-    description: svold
-  shop:
-    description: shop
   friend:
-    description: friend
-  playermarket:
-    description: playermarket
+    description: 好友系统命令
+    usage: /<command> [add|remove|list|accept|deny|tp] [玩家]
+    permission: friend.commands
 
+  coin:
+    description: 硬币系统命令
+    usage: /<command> [add|remove|list|reload|pay] [玩家] [数量]
+    permission: coin.commands
 
+  shop:
+    description: 商店系统
+    usage: /<command> [admin]
+    permission: shop.use
+
+  market:
+    description: 玩家市场
+    usage: /<command> [页码]
+    permission: market.use
+
+  lottery:
+    description: 抽奖系统
+    usage: /<command>
+    permission: lottery.use
+
+  hub:
+    description: 回城命令
+    usage: /<command>
+    permission: hub.use
+
+  skill:
+    description: 自杀命令
+    usage: /<command>
+    permission: skill.use
+
+  sv:
+    description: 隐身命令
+    usage: /<command>
+    permission: sunk.sv
+
+  breakboard:
+    description: 挖掘榜开关
+    usage: /<command>
+    permission: breakboard.use
+
+  catconfig:
+    description: 配置管理
+    usage: /<command> set [lobby|skill] [参数]
+    permission: mikucore.config
 
 permissions:
-  mikucore.config:
-    description: config
-    default: op
-  mikucore.breakboard:
-    description: breakboard
+  friend.commands:
+    description: 允许使用好友命令
     default: true
-  mikucore.sv:
-    description: sv
-    default: op
 
   coin.commands:
-    description: 使用scoin命令的总权限
-    default: true
-  coin.list:
-    description: 使用list子命令
-    default: true
-  coin.add:
-    description: 使用add子命令
-    default: op
-  coin.version:
-    description: 使用version子命令
-    default: true
-  coin.reload:
-    description: 使用reload子命令
-    default: op
-  coin.remove:
-    description: 使用remove子命令
+    description: 允许使用硬币命令
     default: op
 
-  mikucore.shop:
-    description: shop
+  shop.use:
+    description: 允许使用商店
     default: true
+
   shop.admin:
-    description: shop admin
+    description: 允许管理商店
     default: op
 
-  friend.commands:
-    description: friend
-    default: true
-  friend.list:
-    description: 使用list子命令
-    default: true
-  friend.add:
-    description: 使用add子命令
-    default: true
-  friend.remove:
-    description: 使用remove子命令
-    default: true
-  friend.accept:
-    description: 使用accept子命令
-    default: true
-  friend.tp:
-    description: 使用tp子命令
-    default: true
-  friend.deny:
-    description: 使用deny子命令
+  market.use:
+    description: 允许使用玩家市场
     default: true
 
-  mikucore.playermarket:
-    description: playermarket
+  lottery.use:
+    description: 允许使用抽奖
     default: true
+
+  hub.use:
+    description: 允许使用回城命令
+    default: true
+
+  skill.use:
+    description: 允许使用自杀命令
+    default: true
+
+  sunk.sv:
+    description: 允许使用隐身命令
+    default: op
+
+  breakboard.use:
+    description: 允许使用挖掘榜
+    default: true
+
+  mikucore.config:
+    description: 允许修改插件配置
+    default: op

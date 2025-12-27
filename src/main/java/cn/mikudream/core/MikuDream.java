@@ -1,23 +1,14 @@
 package cn.mikudream.core;
 
-import cn.mikudream.core.command.SCommand;
-import cn.mikudream.core.command.impl.SVCommand;
-import cn.mikudream.core.feature.coin.CoinsManager;
-import cn.mikudream.core.feature.coin.command.CoinTabCompleter;
-import cn.mikudream.core.feature.coin.command.CoinCommandExecutor;
-import cn.mikudream.core.feature.friend.FriendSystem;
-import cn.mikudream.core.feature.friend.command.FriendCommandExecutor;
-import cn.mikudream.core.feature.friend.command.FriendTabCompleter;
-import cn.mikudream.core.feature.playermarket.PlayerMarketManager;
-import cn.mikudream.core.feature.playermarket.command.PlayerMarketCommand;
-import cn.mikudream.core.feature.playermarket.listener.PlayerMarketListener;
-import cn.mikudream.core.feature.shop.ShopManager;
-import cn.mikudream.core.feature.shop.command.ShopCommandExecutor;
+import cn.mikudream.core.commands.CommandRegistry;
+import cn.mikudream.core.commands.impl.*;
+import cn.mikudream.core.feature.protection.SpecialItemProtection;
+import cn.mikudream.core.managers.ManagerFactory;
 import cn.mikudream.core.feature.shop.listener.ShopListener;
+import cn.mikudream.core.feature.playermarket.listener.PlayerMarketListener;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,102 +17,295 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.UUID;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MikuDream extends JavaPlugin implements Listener {
-    public static boolean skill_Enabled = true;
-    public int lobby_x = getConfig().getInt("lobby.x");
-    public int lobby_y = getConfig().getInt("lobby.y");
-    public int lobby_z = getConfig().getInt("lobby.z");
-    public String lobby_world = getConfig().getString("lobby.dimension");
-    private final FriendSystem friendSystem = new FriendSystem();
+    // ÅäÖÃ×Ö¶Î
+    private static final String CONFIG_LOBBY_WORLD = "lobby.world";
+    private static final String CONFIG_LOBBY_X = "lobby.x";
+    private static final String CONFIG_LOBBY_Y = "lobby.y";
+    private static final String CONFIG_LOBBY_Z = "lobby.z";
+    private static final String CONFIG_SKILL_ENABLED = "skill.enabled";
+
+    // ÅäÖÃÄ¬ÈÏÖµ
+    private static final String DEFAULT_WORLD = "world";
+    private static final int DEFAULT_X = 0;
+    private static final int DEFAULT_Y = 64;
+    private static final int DEFAULT_Z = 0;
+    private static final boolean DEFAULT_SKILL_ENABLED = true;
+
+    // ÔËĞĞÊ±ÅäÖÃ
+    public static boolean skill_Enabled;
+    public int lobby_x;
+    public int lobby_y;
+    public int lobby_z;
+    public String lobby_world;
+
+    // ¹ÜÀíÆ÷
+    private ManagerFactory managerFactory;
+    private CommandRegistry commandRegistry;
+    private SpecialItemProtection specialItemProtection;
+
+    // ÒşÉíÍæ¼Ò¼¯ºÏ
+    private final Set<UUID> invisiblePlayers = ConcurrentHashMap.newKeySet();
 
     public static MikuDream getInstance() {
         return getPlugin(MikuDream.class);
     }
 
+    @Override
     public void onEnable() {
-        // config
+        // ±£´æÄ¬ÈÏÅäÖÃ
         saveDefaultConfig();
         reloadConfig();
-        skill_Enabled = this.getConfig().getBoolean("Skill", true);
 
-        // command
-        SCommand scommand = new SCommand();
-        scommand.init();
+        // ¼ÓÔØÅäÖÃ
+        loadConfig();
 
-        CoinsManager mikuCoinsManager = new CoinsManager(this);
-        CoinCommandExecutor command = new CoinCommandExecutor(mikuCoinsManager);
-        PluginCommand scoinCommand = this.getCommand("coin");
-
-        FriendCommandExecutor friendCommandExecutor = new FriendCommandExecutor(friendSystem);
-        PluginCommand friendCommand = this.getCommand("friend");
-
-        if (scoinCommand != null && friendCommand != null) {
-            scoinCommand.setExecutor(command);
-            scoinCommand.setTabCompleter(new CoinTabCompleter());
-
-            friendCommand.setExecutor(friendCommandExecutor);
-            friendCommand.setTabCompleter(new FriendTabCompleter(friendSystem));
-
-        } else {
-            getLogger().severe("æ— æ³•æ³¨å†Œ coin,shop å‘½ä»¤ï¼Œè¯·æ£€æŸ¥ plugin.yml é…ç½®");
+        // ³õÊ¼»¯¹ÜÀíÆ÷¹¤³§
+        this.managerFactory = new ManagerFactory(this);
+        try {
+            managerFactory.initializeAll();
+            getLogger().info("¹ÜÀíÆ÷¹¤³§³õÊ¼»¯Íê³É");
+        } catch (ManagerFactory.ManagerInitializationException e) {
+            getLogger().severe("¹ÜÀíÆ÷³õÊ¼»¯Ê§°Ü: " + e.getMessage());
+            e.printStackTrace();
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
 
-        // shop
-        ShopManager.init(this);
-        getServer().getPluginManager().registerEvents(new ShopListener(), this);
-        getCommand("shop").setExecutor(new ShopCommandExecutor());
+        // ³õÊ¼»¯ÃüÁî×¢²á±í
+        this.commandRegistry = new CommandRegistry(this);
 
-        // playerMarket
-        PlayerMarketManager.init(this);
-        getServer().getPluginManager().registerEvents(new PlayerMarketListener(), this);
-        getCommand("playermarket").setExecutor(new PlayerMarketCommand());
+        // ×¢²áÒÀÀµ
+        registerDependencies();
 
-        getLogger().info("MikuDreamæ’ä»¶å·²å¯ç”¨!");
+        // ×¢²áÃüÁî
+        registerCommands();
+
+        // ×¢²áÊÂ¼ş¼àÌıÆ÷
+        registerListeners();
+
+        // ×¢²á×ÔÉí×÷ÎªÊÂ¼ş¼àÌıÆ÷
+        Bukkit.getPluginManager().registerEvents(this, this);
+
+        specialItemProtection = new SpecialItemProtection(this);
+        Bukkit.getPluginManager().registerEvents(specialItemProtection, this);
+
+        getLogger().info("MikuDream²å¼şÒÑÆôÓÃ! °æ±¾: " + getDescription().getVersion());
     }
 
     @Override
     public void onDisable() {
-        this.getConfig().set("kill_enabled", skill_Enabled);
-        this.saveConfig();
+        // ±£´æÅäÖÃ
+        saveConfig();
+
+        // ¹Ø±Õ¹ÜÀíÆ÷
+        if (managerFactory != null) {
+            managerFactory.shutdown();
+        }
+
+        // ÇåÀí×ÊÔ´
+        invisiblePlayers.clear();
+        specialItemProtection.cleanupAllEffects();
+
+        getLogger().info("MikuDream²å¼şÒÑ½ûÓÃ");
+    }
+
+    private void loadConfig() {
+        // ¼ÓÔØ´óÌü×ø±ê
+        this.lobby_world = getConfig().getString(CONFIG_LOBBY_WORLD, DEFAULT_WORLD);
+        this.lobby_x = getConfig().getInt(CONFIG_LOBBY_X, DEFAULT_X);
+        this.lobby_y = getConfig().getInt(CONFIG_LOBBY_Y, DEFAULT_Y);
+        this.lobby_z = getConfig().getInt(CONFIG_LOBBY_Z, DEFAULT_Z);
+
+        // ¼ÓÔØ×ÔÉ±¹¦ÄÜ¿ª¹Ø
+        skill_Enabled = getConfig().getBoolean(CONFIG_SKILL_ENABLED, DEFAULT_SKILL_ENABLED);
+
+        if (!getConfig().contains(CONFIG_LOBBY_WORLD)) {
+            getConfig().set(CONFIG_LOBBY_WORLD, DEFAULT_WORLD);
+        }
+        if (!getConfig().contains(CONFIG_LOBBY_X)) {
+            getConfig().set(CONFIG_LOBBY_X, DEFAULT_X);
+        }
+        if (!getConfig().contains(CONFIG_LOBBY_Y)) {
+            getConfig().set(CONFIG_LOBBY_Y, DEFAULT_Y);
+        }
+        if (!getConfig().contains(CONFIG_LOBBY_Z)) {
+            getConfig().set(CONFIG_LOBBY_Z, DEFAULT_Z);
+        }
+        if (!getConfig().contains(CONFIG_SKILL_ENABLED)) {
+            getConfig().set(CONFIG_SKILL_ENABLED, DEFAULT_SKILL_ENABLED);
+        }
+
+        saveConfig();
+        getLogger().info("ÅäÖÃ¼ÓÔØÍê³É");
+    }
+
+    private void registerDependencies() {
+        // ×¢²á¹ÜÀíÆ÷ÒÀÀµ
+        commandRegistry.registerDependency(
+                cn.mikudream.core.managers.CoinsManager.class,
+                managerFactory.getCoinsManager()
+        );
+        commandRegistry.registerDependency(
+                cn.mikudream.core.feature.friend.FriendSystem.class,
+                managerFactory.getFriendSystem()
+        );
+        commandRegistry.registerDependency(
+                cn.mikudream.core.feature.lottery.LotterySystem.class,
+                managerFactory.getLotterySystem()
+        );
+    }
+
+    private void registerCommands() {
+        // ×¢²áËùÓĞÃüÁî
+        commandRegistry.registerCommand("friend", new FriendCommands(
+                managerFactory.getFriendSystem()
+        ));
+
+        commandRegistry.registerCommand("coin", new CoinCommands(
+                managerFactory.getCoinsManager()
+        ));
+
+        commandRegistry.registerCommand("shop", new ShopCommand());
+
+        commandRegistry.registerCommand("market", new MarketCommand());
+
+        commandRegistry.registerCommand("lottery", new LotteryCommand(
+                managerFactory.getLotterySystem()
+        ));
+
+        commandRegistry.registerCommand("hub", new HubCommand(this));
+        commandRegistry.registerCommand("skill", new SkillCommand());
+        commandRegistry.registerCommand("sv", new InvisibleCommand(this, invisiblePlayers));
+        commandRegistry.registerCommand("catconfig", new ConfigCommands(this));
+
+        getLogger().info("ËùÓĞÃüÁîÒÑ×¢²á");
+    }
+
+    private void registerListeners() {
+        // ×¢²áÉÌµê¼àÌıÆ÷
+        Bukkit.getPluginManager().registerEvents(new ShopListener(), this);
+
+        // ×¢²áÍæ¼ÒÊĞ³¡¼àÌıÆ÷
+        Bukkit.getPluginManager().registerEvents(new PlayerMarketListener(), this);
+
+        getLogger().info("ÊÂ¼ş¼àÌıÆ÷×¢²áÍê³É");
     }
 
     @EventHandler
     public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
-        if (event.getFrom().getName().equalsIgnoreCase(lobby_world)) {
-            Player player = event.getPlayer();
-            if (player.getGameMode() == GameMode.ADVENTURE) {
-                player.setGameMode(GameMode.SURVIVAL);
-                player.sendMessage("Â§eä½ å·²ç¦»å¼€ä¸»åŸï¼Œæ¸¸æˆæ¨¡å¼å·²åˆ‡æ¢ä¸ºç”Ÿå­˜");
-            }
+        Player player = event.getPlayer();
+        String fromWorld = event.getFrom().getName();
+
+        // Èç¹û´ÓÖ÷³ÇÀë¿ª£¬ÇĞ»»µ½Éú´æÄ£Ê½
+        if (fromWorld.equalsIgnoreCase(lobby_world) &&
+                player.getGameMode() == GameMode.ADVENTURE) {
+            player.setGameMode(GameMode.SURVIVAL);
+            player.sendMessage("¡ìeÄãÒÑÀë¿ªÖ÷³Ç£¬ÓÎÏ·Ä£Ê½ÒÑÇĞ»»ÎªÉú´æ");
         }
-    }
 
-    public void updatelobby_xyz(int x, int y, int z) {
-        getConfig().set("lobby.x", x);
-        getConfig().set("lobby.y", y);
-        getConfig().set("lobby.z", z);
-        lobby_x = getConfig().getInt("lobby.x");
-        lobby_y = getConfig().getInt("lobby.y");
-        lobby_z = getConfig().getInt("lobby.z");
-        saveConfig();
-    }
-
-    public void setskill(boolean flag, CommandSender sender) {
-        getConfig().set("kill_enabled", flag);
-        saveConfig();
-        sender.sendMessage("Â§aå·²å°† skill åŠŸèƒ½è®¾ç½®ä¸º: " + skill_Enabled);
-        getLogger().info("skill åŠŸèƒ½è®¾ç½®ä¸º: " + skill_Enabled);
+        // Èç¹û½øÈëÖ÷³Ç£¬ÇĞ»»µ½Ã°ÏÕÄ£Ê½
+        if (player.getWorld().getName().equalsIgnoreCase(lobby_world) &&
+                player.getGameMode() != GameMode.ADVENTURE) {
+            player.setGameMode(GameMode.ADVENTURE);
+            player.sendMessage("¡ìeÄãÒÑ½øÈëÖ÷³Ç£¬ÓÎÏ·Ä£Ê½ÒÑÇĞ»»ÎªÃ°ÏÕ");
+        }
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player newPlayer = event.getPlayer();
-        for (UUID uuid : SVCommand.invisiblePlayers) {
+
+        // ´¦ÀíÒşÉíÍæ¼Ò
+        for (UUID uuid : invisiblePlayers) {
             Player invisiblePlayer = Bukkit.getPlayer(uuid);
             if (invisiblePlayer != null && !invisiblePlayer.equals(newPlayer)) {
                 newPlayer.hidePlayer(this, invisiblePlayer);
             }
         }
+
+        // Èç¹ûÍæ¼ÒÔÚÖ÷³Ç£¬ÉèÖÃÃ°ÏÕÄ£Ê½
+        if (newPlayer.getWorld().getName().equalsIgnoreCase(lobby_world)) {
+            newPlayer.setGameMode(GameMode.ADVENTURE);
+        }
+    }
+
+    // ÅäÖÃ¸üĞÂ·½·¨
+    public void updatelobby_xyz(int x, int y, int z) {
+        getConfig().set(CONFIG_LOBBY_X, x);
+        getConfig().set(CONFIG_LOBBY_Y, y);
+        getConfig().set(CONFIG_LOBBY_Z, z);
+
+        // ¸üĞÂÔËĞĞÊ±Öµ
+        this.lobby_x = x;
+        this.lobby_y = y;
+        this.lobby_z = z;
+
+        saveConfig();
+        getLogger().info("Ö÷³Ç×ø±êÒÑ¸üĞÂ: " + x + ", " + y + ", " + z);
+    }
+
+    public void setskill(boolean flag, CommandSender sender) {
+        getConfig().set(CONFIG_SKILL_ENABLED, flag);
+        skill_Enabled = flag;
+        saveConfig();
+
+        sender.sendMessage("¡ìa×ÔÉ±¹¦ÄÜÒÑ" + (flag ? "ÆôÓÃ" : "½ûÓÃ"));
+        getLogger().info("×ÔÉ±¹¦ÄÜÒÑ" + (flag ? "ÆôÓÃ" : "½ûÓÃ"));
+    }
+
+    // ÒşÉíÍæ¼Ò¹ÜÀí·½·¨
+    public Set<UUID> getInvisiblePlayers() {
+        return invisiblePlayers;
+    }
+
+    public boolean togglePlayerInvisibility(Player player) {
+        UUID playerId = player.getUniqueId();
+
+        if (invisiblePlayers.contains(playerId)) {
+            // ½â³ıÒşÉí
+            for (Player online : Bukkit.getOnlinePlayers()) {
+                online.showPlayer(this, player);
+            }
+            invisiblePlayers.remove(playerId);
+            return false; // ²»ÔÙÒşÉí
+        } else {
+            // ½øÈëÒşÉí
+            for (Player online : Bukkit.getOnlinePlayers()) {
+                if (!online.equals(player)) {
+                    online.hidePlayer(this, player);
+                }
+            }
+            invisiblePlayers.add(playerId);
+            return true; // ÒÑÒşÉí
+        }
+    }
+
+    // »ñÈ¡¹ÜÀíÆ÷
+    public ManagerFactory getManagerFactory() {
+        return managerFactory;
+    }
+
+    public cn.mikudream.core.managers.CoinsManager getCoinsManager() {
+        return managerFactory.getCoinsManager();
+    }
+
+    public cn.mikudream.core.managers.ShopManager getShopManager() {
+        return managerFactory.getShopManager();
+    }
+
+    public cn.mikudream.core.managers.PlayerMarketManager getPlayerMarketManager() {
+        return managerFactory.getMarketManager();
+    }
+
+    public cn.mikudream.core.feature.friend.FriendSystem getFriendSystem() {
+        return managerFactory.getFriendSystem();
+    }
+
+    public cn.mikudream.core.feature.lottery.LotterySystem getLotterySystem() {
+        return managerFactory.getLotterySystem();
     }
 }

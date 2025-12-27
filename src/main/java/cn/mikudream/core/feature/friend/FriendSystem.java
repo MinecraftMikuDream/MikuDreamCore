@@ -4,41 +4,41 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FriendSystem {
-    // å­˜å‚¨ç»“æ„: ç©å®¶ID -> å¥½å‹åˆ—è¡¨
+    // ´æ´¢½á¹¹: Íæ¼ÒID -> ºÃÓÑÁĞ±í
     private final Map<UUID, List<Friend>> playerFriends = new ConcurrentHashMap<>();
 
-    // å¥½å‹è¯·æ±‚: æ¥æ”¶è€…ID -> è¯·æ±‚è€…åˆ—è¡¨
+    // ºÃÓÑÇëÇó: ½ÓÊÕÕßID -> ÇëÇóÕßÁĞ±í
     private final Map<UUID, Set<UUID>> pendingRequests = new ConcurrentHashMap<>();
 
-    // æ·»åŠ å¥½å‹è¯·æ±‚
+    // Ìí¼ÓºÃÓÑÇëÇó
     public void addFriendRequest(UUID sender, UUID receiver) {
         pendingRequests.computeIfAbsent(receiver, k -> new HashSet<>()).add(sender);
     }
 
-    // æ¥å—å¥½å‹è¯·æ±‚
+    // ½ÓÊÜºÃÓÑÇëÇó
     public boolean acceptFriendRequest(UUID player, UUID friend) {
         Set<UUID> requests = pendingRequests.get(player);
         if (requests != null && requests.remove(friend)) {
-            addFriend(player, friend, "å¥½å‹");
-            addFriend(friend, player, "å¥½å‹");
+            addFriend(player, friend, "ºÃÓÑ");
+            addFriend(friend, player, "ºÃÓÑ");
             return true;
         }
         return false;
     }
 
-    // æ‹’ç»å¥½å‹è¯·æ±‚
+    // ¾Ü¾øºÃÓÑÇëÇó
     public boolean denyFriendRequest(UUID player, UUID friend) {
         Set<UUID> requests = pendingRequests.get(player);
         return requests != null && requests.remove(friend);
     }
 
-    // æ·»åŠ å¥½å‹
+    // Ìí¼ÓºÃÓÑ
     public void addFriend(UUID playerId, UUID friendId, String friendName) {
         Friend friend = new Friend(playerId, friendId, friendName);
         playerFriends.computeIfAbsent(playerId, k -> new ArrayList<>()).add(friend);
     }
 
-    // åˆ é™¤å¥½å‹
+    // É¾³ıºÃÓÑ
     public boolean removeFriend(UUID playerId, UUID friendId) {
         List<Friend> friends = playerFriends.get(playerId);
         if (friends != null) {
@@ -47,12 +47,12 @@ public class FriendSystem {
         return false;
     }
 
-    // è·å–å¥½å‹åˆ—è¡¨
+    // »ñÈ¡ºÃÓÑÁĞ±í
     public List<Friend> getFriends(UUID playerId) {
         return playerFriends.getOrDefault(playerId, Collections.emptyList());
     }
 
-    // è·å–å¾…å¤„ç†è¯·æ±‚
+    // »ñÈ¡´ı´¦ÀíÇëÇó
     public Set<UUID> getPendingRequests(UUID playerId) {
         return pendingRequests.getOrDefault(playerId, Collections.emptySet());
     }
