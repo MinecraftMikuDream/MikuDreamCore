@@ -7,7 +7,7 @@
   </p>
 
 ## 📂 项目仓库
-[![Github Release Downloads](https://img.shields.io/github/downloads/oneachina/MikuDreamCore/total?label=Github%20Release%20Downloads&style=flat-square)](https://github.com/oneachina/MikuDreamCore/releases)
+[![Github Release Downloads](https://img.shields.io/github/downloads/MinecraftMikuDream/MikuDreamCore/total?label=Github%20Release%20Downloads&style=flat-square)](https://github.com/oneachina/MikuDreamCore/releases)
 - **GitHub**：[MikuDream Core](https://github.com/oneachina/MikuDreamCore)
 - **更新日志**：[查看提交记录](https://github.com/oneachina/MikuDreamCore/commits/main)
 
